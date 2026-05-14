@@ -83,19 +83,21 @@ export function useTransactions() {
     account_id: string;
     category_id?: string;
     date: string;
+    starting_installment?: number;
   }) => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not found');
 
+      const startingInstallment = data.starting_installment || 1;
       const amountPerInstallment = Math.round(data.amount_total_cents / data.installments);
       const transactions = [];
-      const startDate = new Date(data.date);
+      const baseDate = new Date(data.date);
 
-      for (let i = 0; i < data.installments; i++) {
-        const txDate = new Date(startDate);
-        txDate.setMonth(txDate.getMonth() + i);
+      for (let i = startingInstallment - 1; i < data.installments; i++) {
+        const txDate = new Date(baseDate);
+        txDate.setMonth(txDate.getMonth() + (i - (startingInstallment - 1)));
         
         transactions.push({
           user_id: user.id,
@@ -105,7 +107,7 @@ export function useTransactions() {
           account_id: data.account_id,
           category_id: data.category_id,
           date: txDate.toISOString(),
-          is_paid: i === 0, // Apenas a primeira parcela é marcada como paga geralmente
+          is_paid: i === (startingInstallment - 1),
           installment_current: i + 1,
           installment_total: data.installments,
           source: 'MANUAL'

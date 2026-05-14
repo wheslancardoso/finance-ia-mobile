@@ -161,30 +161,23 @@ export default function Dashboard() {
           <View className="h-64 bg-white/5 rounded-[40px] animate-pulse mb-8" />
         )}
 
-        {/* ROW 2: Grid de Ações Rápidas */}
-        <View className="flex-row gap-4 mb-8">
-           <View className="flex-1">
-              <BillCommitmentCard 
-                immediateCardDebt={analysis?.monthlyOutlook?.immediateCardDebt || 0}
-                upcomingCardDebt={analysis?.monthlyOutlook?.upcomingCardDebt || 0}
-                scheduledExpenses={analysis?.monthlyOutlook?.scheduledOnly || 0}
-                budgetReserves={analysis?.monthlyOutlook?.budgetReserves || 0}
-                totalPlanned={analysis?.monthlyOutlook?.plannedExpenses || 0}
-                isCrisis={analysis?.isCrisisMode}
-              />
-           </View>
-        </View>
+        {/* ROW 2: Ações Rápidas (Sync with Web Grid) */}
+        <View className="gap-4 mb-8">
+          <BillCommitmentCard 
+            immediateCardDebt={analysis?.monthlyOutlook?.immediateCardDebt || 0}
+            upcomingCardDebt={analysis?.monthlyOutlook?.upcomingCardDebt || 0}
+            scheduledExpenses={analysis?.monthlyOutlook?.scheduledOnly || 0}
+            budgetReserves={analysis?.monthlyOutlook?.budgetReserves || 0}
+            totalPlanned={analysis?.monthlyOutlook?.plannedExpenses || 0}
+            isCrisis={analysis?.isCrisisMode}
+          />
+          
+          <MonthNavigator 
+            selectedDate={targetDate} 
+            onDateChange={setTargetDate} 
+          />
 
-        <View className="flex-row gap-4 mb-8">
-          <View className="flex-1">
-            <MonthNavigator 
-              selectedDate={targetDate} 
-              onDateChange={setTargetDate} 
-            />
-          </View>
-          <View className="flex-1">
-            <SpendingSimulatorCard onPress={() => router.push('/simulator' as any)} />
-          </View>
+          <SpendingSimulatorCard onPress={() => router.push('/simulator' as any)} />
         </View>
 
         {/* ROW 3: Tab Selector (Resumo / Timeline) */}
@@ -233,29 +226,7 @@ export default function Dashboard() {
           </View>
         </View>
 
-        {/* ROW 4: Metas (Apenas se mês atual) */}
-        {isCurrentMonth && goals.length > 0 && (
-          <View className="mb-10">
-            <View className="flex-row items-center justify-between mb-4 px-1">
-              <Text className="text-white/60 text-[10px] font-black uppercase tracking-[3px]">Suas Metas</Text>
-              <Pressable onPress={() => router.push('/goals')}>
-                <Text className="text-emerald-400 text-[10px] font-black uppercase">Ver todas</Text>
-              </Pressable>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-              {goals.slice(0, 3).map((goal) => (
-                <View key={goal.id} style={{ width: 300, marginRight: 16 }}>
-                  <GoalCard 
-                    goal={goal} 
-                    onPress={() => router.push('/goals')}
-                  />
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* ROW 5: Orçamentos (Spending Capacity) */}
+        {/* ROW 4: Orçamentos (Spending Capacity) */}
         <View className="mb-20">
           <View className="flex-row items-center justify-between mb-4 px-1">
             <Text className="text-white/60 text-[10px] font-black uppercase tracking-[3px]">Capacidade de Gasto</Text>

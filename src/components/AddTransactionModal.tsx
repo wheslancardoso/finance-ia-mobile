@@ -1,7 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import { Plus, X, ArrowUpRight, ArrowDownLeft, ArrowRightLeft, Hash, Tag } from 'lucide-react-native';
+import { Plus, X, ArrowUpRight, ArrowDownLeft, ArrowRightLeft, Hash, Tag, Calendar, Info } from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format, startOfMonth, isSameMonth, isBefore } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '../utils/format';
 import { useTransactions } from '../hooks/useTransactions';
 import { supabase } from '../lib/supabase';
@@ -27,10 +30,13 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
   const [type, setType] = useState<'INCOME' | 'EXPENSE' | 'TRANSFER'>(transaction?.transaction_type || 'EXPENSE');
   const [value, setValue] = useState(transaction ? (Math.abs(transaction.amount_cents) / 100).toString() : '');
   const [description, setDescription] = useState(transaction?.description || '');
+  const [date, setDate] = useState(transaction?.date ? new Date(transaction.date) : new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [accountId, setAccountId] = useState<string>(transaction?.account_id || '');
   const [targetAccountId, setTargetAccountId] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>(transaction?.category_id || '');
   const [installments, setInstallments] = useState('1');
+  const [startingInstallment, setStartingInstallment] = useState('1');
   const [accounts, setAccounts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
 
@@ -59,11 +65,14 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
     []
   );
 
+  const isLegacyDebt = useMemo(() => {
+    return isBefore(startOfMonth(date), startOfMonth(new Date()));
+  }, [date]);
+
   const handleSave = async () => {
-    if (!value || !description || !accountId) return;
-    
     const amountCents = Math.round(parseFloat(value.replace(',', '.')) * 100);
     const numInstallments = parseInt(installments) || 1;
+    const startNum = parseInt(startingInstallment) || 1;
 
     try {
       if (transaction?.id) {
@@ -73,6 +82,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
           transaction_type: type,
           account_id: accountId,
           category_id: categoryId || null,
+          date: date.toISOString(),
         });
       } else if (type === 'TRANSFER') {
         await createTransfer({
@@ -80,16 +90,17 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
           amount_cents: amountCents,
           from_account_id: accountId,
           to_account_id: targetAccountId,
-          date: new Date().toISOString(),
+          date: date.toISOString(),
         });
       } else if (type === 'EXPENSE' && numInstallments > 1) {
         await createInstallmentSeries({
           description,
           amount_total_cents: amountCents,
           installments: numInstallments,
+          starting_installment: startNum,
           account_id: accountId,
           category_id: categoryId || undefined,
-          date: new Date().toISOString(),
+          date: date.toISOString(),
         });
       } else {
         await createTransaction({
@@ -98,7 +109,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
           transaction_type: type,
           account_id: accountId,
           category_id: categoryId || undefined,
-          date: new Date().toISOString(),
+          date: date.toISOString(),
         });
       }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -189,7 +200,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
 
         {/* Description Input */}
         <View className="mb-8">
-          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2">O que foi isso?</Text>
+          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">O que foi isso?</Text>
           <TextInput
             className="bg-white/5 border border-white/10 rounded-[24px] px-5 py-5 text-white text-base font-bold"
             placeholder="Ex: Almoço, Salário, Pix..."
@@ -198,6 +209,42 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
             onChangeText={setDescription}
           />
         </View>
+
+        {/* Date Selector */}
+        <View className="mb-8">
+          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Quando aconteceu?</Text>
+          <Pressable 
+            onPress={() => setShowDatePicker(true)}
+            className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-5"
+          >
+            <Calendar size={18} color="rgba(255,255,255,0.4)" className="mr-3" />
+            <Text className="text-white text-base font-bold flex-1">
+              {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+            </Text>
+          </Pressable>
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) setDate(selectedDate);
+              }}
+            />
+          )}
+        </View>
+
+        {/* Legacy Debt Notice */}
+        {isLegacyDebt && (
+          <View className="mb-8 bg-amber-500/10 border border-amber-500/20 p-5 rounded-[24px] flex-row items-center gap-4">
+            <Info size={20} color="#f59e0b" />
+            <View className="flex-1">
+              <Text className="text-amber-500 text-[10px] font-black uppercase tracking-widest mb-1">Dívida Legada Detectada</Text>
+              <Text className="text-amber-500/60 text-[10px] font-bold">Este valor não afetará seu teto de sobrevivência atual.</Text>
+            </View>
+          </View>
+        )}
 
         {/* Account Selectors */}
         <View className="flex-row gap-4 mb-10">
@@ -278,20 +325,41 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
 
         {/* Installments Selection (Only if expense) */}
         {type === 'EXPENSE' && (
-          <View className="mb-8">
+          <View className="mb-10">
             <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Parcelamento</Text>
-            <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4">
-              <Hash size={18} color="rgba(255,255,255,0.2)" className="mr-3" />
-              <TextInput
-                className="flex-1 text-white text-base font-bold"
-                placeholder="Número de parcelas (ex: 12)"
-                placeholderTextColor="rgba(255,255,255,0.1)"
-                keyboardType="numeric"
-                value={installments}
-                onChangeText={setInstallments}
-              />
-              <Text className="text-white/40 text-[10px] font-black uppercase">Vezes</Text>
+            <View className="flex-row gap-4">
+              <View className="flex-[2] flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4">
+                <Hash size={18} color="rgba(255,255,255,0.2)" className="mr-3" />
+                <TextInput
+                  className="flex-1 text-white text-base font-bold"
+                  placeholder="Total"
+                  placeholderTextColor="rgba(255,255,255,0.1)"
+                  keyboardType="numeric"
+                  value={installments}
+                  onChangeText={setInstallments}
+                />
+                <Text className="text-white/40 text-[10px] font-black uppercase">Vezes</Text>
+              </View>
+
+              {parseInt(installments) > 1 && (
+                <View className="flex-1 flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4">
+                  <TextInput
+                    className="flex-1 text-white text-base font-bold text-center"
+                    placeholder="1"
+                    placeholderTextColor="rgba(255,255,255,0.1)"
+                    keyboardType="numeric"
+                    value={startingInstallment}
+                    onChangeText={setStartingInstallment}
+                  />
+                  <Text className="text-white/40 text-[10px] font-black uppercase">ª</Text>
+                </View>
+              )}
             </View>
+            {parseInt(installments) > 1 && (
+              <Text className="text-white/20 text-[8px] font-bold uppercase tracking-widest mt-2 px-1 text-center">
+                Iniciando na parcela {startingInstallment} de {installments}
+              </Text>
+            )}
           </View>
         )}
 

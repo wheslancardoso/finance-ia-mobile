@@ -71,7 +71,7 @@ export default function UnifiedHeader({
                     className="w-1.5 h-1.5 rounded-full bg-emerald-500"
                   />
                   <Text className="text-[10px] font-black text-white/30 uppercase tracking-[3px]">
-                    {isFuture ? `Time Machine: ${format(targetDate, "MMMM", { locale: ptBR })}` : "Tempo Real"}
+                    {isFuture ? `MÁQUINA DO TEMPO: ${format(targetDate, "MMMM", { locale: ptBR })}` : "Tempo Real"}
                   </Text>
                 </View>
                 <Text className="text-[10px] font-bold text-white/20 mt-1">
@@ -124,7 +124,7 @@ export default function UnifiedHeader({
             </Text>
 
             {/* Sub-stats Row */}
-            <View className="flex-row items-center gap-6 mt-8">
+            <View className="flex-row items-center gap-4 mt-8 flex-wrap">
               <View>
                 <Text className="text-[8px] font-black text-white/20 uppercase tracking-[2px] mb-1">Saldo Real</Text>
                 <Text className="text-emerald-400 font-black text-sm">{formatCurrency(accumulatedBalanceCents)}</Text>
@@ -134,15 +134,23 @@ export default function UnifiedHeader({
                 <Text className="text-[8px] font-black text-white/20 uppercase tracking-[2px] mb-1">Dívida Total</Text>
                 <Text className="text-red-400/80 font-black text-sm">{formatCurrency(totalConsolidatedDebtCents)}</Text>
               </View>
-              <View className="w-px h-8 bg-white/5" />
-              <View className={`px-3 py-1.5 rounded-full border ${
-                isCrisisMode ? 'bg-red-500/10 border-red-500/20' : 'bg-emerald-500/10 border-emerald-500/20'
-              }`}>
-                <Text className={`text-[8px] font-black uppercase tracking-widest ${
-                  isCrisisMode ? 'text-red-400' : 'text-emerald-400'
+              
+              <View className="flex-row items-center gap-2">
+                <View className={`px-3 py-1.5 rounded-full border ${
+                  isCrisisMode ? 'bg-red-500/10 border-red-500/20' : 'bg-emerald-500/10 border-emerald-500/20'
                 }`}>
-                  {isCrisisMode ? "Crítico" : "Saudável"}
-                </Text>
+                  <Text className={`text-[8px] font-black uppercase tracking-widest ${
+                    isCrisisMode ? 'text-red-400' : 'text-emerald-400'
+                  }`}>
+                    {isCrisisMode ? "Crítico" : "Saudável"}
+                  </Text>
+                </View>
+
+                {isRecoveryMode && !isCrisisMode && (
+                  <View className="px-3 py-1.5 rounded-full border bg-amber-500/10 border-amber-500/20">
+                    <Text className="text-[8px] font-black uppercase tracking-widest text-amber-400">Recuperação</Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
