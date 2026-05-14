@@ -5,6 +5,8 @@ import { BlurView } from 'expo-blur';
 import { useState } from 'react';
 import AddTransactionModal from '../../src/components/AddTransactionModal';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 export default function TabsLayout() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -47,7 +49,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Dashboard',
+            title: 'Início',
             tabBarIcon: ({ color, size }) => (
               <LayoutDashboard size={24} color={color} />
             ),
@@ -67,54 +69,57 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="plus"
           options={{
-            tabBarButton: (props) => (
+            tabBarButton: ({ style, ref, ...props }) => (
               <Pressable
                 {...props}
+                style={style as any}
                 onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                   setShowAddModal(true);
                 }}
-                className="items-center justify-center -mt-8"
+                className="items-center justify-center -mt-10"
               >
-                <View 
-                  className="w-14 h-14 bg-violet-600 rounded-2xl items-center justify-center shadow-xl shadow-violet-600/40 border-4 border-[#050505]"
-                  style={{ transform: [{ rotate: '45deg' }] }}
+                <LinearGradient
+                  colors={['#8b5cf6', '#d946ef']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className="w-14 h-14 rounded-2xl items-center justify-center shadow-xl shadow-violet-600/40 border-4 border-[#050505]"
                 >
-                  <View style={{ transform: [{ rotate: '-45deg' }] }}>
-                    <Plus size={28} color="#fff" />
-                  </View>
-                </View>
+                  <Plus size={28} color="#fff" />
+                </LinearGradient>
               </Pressable>
             ),
           }}
         />
 
+
         <Tabs.Screen
           name="accounts"
           options={{
-            title: 'Contas',
+            title: 'Patrimônio',
             tabBarIcon: ({ color, size }) => (
               <Wallet size={24} color={color} />
             ),
           }}
         />
         <Tabs.Screen
-          name="profile"
+          name="goals"
           options={{
-            title: 'Perfil',
+            title: 'Objetivos',
             tabBarIcon: ({ color, size }) => (
-              <User size={24} color={color} />
+              <Target size={24} color={color} />
             ),
           }}
         />
 
         {/* Telas que ficam no grupo (tabs) mas não aparecem no rodapé */}
+        <Tabs.Screen name="profile" options={{ href: null }} />
         <Tabs.Screen name="recurring" options={{ href: null }} />
-        <Tabs.Screen name="goals" options={{ href: null }} />
         <Tabs.Screen name="reports" options={{ href: null }} />
         <Tabs.Screen name="categories" options={{ href: null }} />
         <Tabs.Screen name="analytics" options={{ href: null }} />
       </Tabs>
+
 
       {/* Modal Global de Transação */}
       {showAddModal && (

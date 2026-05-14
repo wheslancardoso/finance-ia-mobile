@@ -53,7 +53,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"

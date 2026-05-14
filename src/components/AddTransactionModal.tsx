@@ -122,12 +122,18 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
       handleIndicatorStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
     >
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <View className="flex-row justify-between items-center mb-8">
-          <Text className="text-white text-xl font-black uppercase tracking-widest">
-            {transaction ? 'Editar Lançamento' : 'Nova Transação'}
-          </Text>
-          <Pressable onPress={() => bottomSheetRef.current?.close()}>
-            <X color="#fff" size={24} />
+        <View className="flex-row justify-between items-center mb-10">
+          <View>
+            <Text className="text-white text-2xl font-black uppercase tracking-tight">
+              {transaction ? 'Editar Lançamento' : 'Novo Lançamento'}
+            </Text>
+            <Text className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em] mt-1">Centro de Comando Vesper</Text>
+          </View>
+          <Pressable 
+            onPress={() => bottomSheetRef.current?.close()}
+            className="w-10 h-10 rounded-full bg-white/5 items-center justify-center border border-white/5"
+          >
+            <X color="rgba(255,255,255,0.4)" size={20} />
           </Pressable>
         </View>
 
@@ -166,16 +172,19 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
         </View>
 
         {/* Value Input */}
-        <View className="mb-8">
-          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2">Valor</Text>
-          <TextInput
-            className="text-white text-5xl font-black tracking-tighter"
-            placeholder="0,00"
-            placeholderTextColor="rgba(255,255,255,0.05)"
-            keyboardType="numeric"
-            value={value}
-            onChangeText={setValue}
-          />
+        <View className="mb-10 items-center">
+          <View className="flex-row items-baseline gap-2">
+            <Text className="text-white/10 text-2xl font-bold">R$</Text>
+            <TextInput
+              className={`text-6xl font-black tracking-tighter tabular-nums ${type === 'INCOME' ? 'text-emerald-400' : 'text-white'}`}
+              placeholder="0,00"
+              placeholderTextColor="rgba(255,255,255,0.02)"
+              keyboardType="decimal-pad"
+              autoFocus
+              value={value}
+              onChangeText={setValue}
+            />
+          </View>
         </View>
 
         {/* Description Input */}
@@ -292,11 +301,13 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
           className={`w-full py-6 rounded-[32px] items-center shadow-2xl ${
             type === 'INCOME' ? 'bg-emerald-500 shadow-emerald-500/20' : 
             type === 'TRANSFER' ? 'bg-violet-600 shadow-violet-600/20' : 
-            'bg-rose-500 shadow-rose-500/20'
+            'bg-white shadow-white/5'
           }`}
         >
-          <Text className="text-white font-black uppercase tracking-widest">
-            {saving ? 'Processando...' : (transaction ? 'Salvar Alterações' : 'Confirmar Lançamento')}
+          <Text className={`font-black uppercase tracking-[0.3em] text-[11px] ${
+            type === 'EXPENSE' ? 'text-black' : 'text-white'
+          }`}>
+            {saving ? 'Processando...' : (transaction ? 'Atualizar Lançamento' : 'Ativar Registro')}
           </Text>
         </Pressable>
       </ScrollView>

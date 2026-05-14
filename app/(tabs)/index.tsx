@@ -1,286 +1,278 @@
-import { useState, useMemo } from 'react';
-import { View, Text, ScrollView, SafeAreaView, ActivityIndicator, RefreshControl, Pressable } from 'react-native';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, RefreshControl, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CreditCard, Plus, Target, PieChart, User, Repeat, TrendingUp } from 'lucide-react-native';
-import { startOfMonth, isSameMonth } from 'date-fns';
-
-import TransactionList from '../../src/components/TransactionList';
-import LiquidityCard from '../../src/components/LiquidityCard';
-import AddTransactionModal from '../../src/components/AddTransactionModal';
-import MonthNavigator from '../../src/components/MonthNavigator';
-import ProjectedTimeline from '../../src/components/ProjectedTimeline';
-import NetWorthChart from '../../src/components/NetWorthChart';
-import GoalCard from '../../src/components/GoalCard';
-import SurvivalCeiling from '../../src/components/SurvivalCeiling';
-import { DashboardSkeleton } from '../../src/components/Skeleton';
-import SpendingSimulator from '../../src/components/SpendingSimulator';
+import { 
+  Calculator, 
+  History, 
+  Plus, 
+  Target
+} from 'lucide-react-native';
+import { format, startOfMonth, isSameMonth, addMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
-import { History, Calculator, Sparkles, Trash2, Layers } from 'lucide-react-native';
-
 import { useFinancialAnalysis } from '../../src/hooks/useFinancialAnalysis';
-import { useProjectionTimeline } from '../../src/hooks/useProjectionTimeline';
-import { useGoals } from '../../src/hooks/useGoals';
-import { formatCurrency } from '../../src/utils/format';
+import { useFinancialData } from '../../src/context/FinancialDataContext';
+
+// Components
+import UnifiedHeader from '../../src/components/dashboard/UnifiedHeader';
+import BillCommitmentCard from '../../src/components/dashboard/BillCommitmentCard';
+import MonthNavigator from '../../src/components/MonthNavigator';
+import SpendingSimulatorCard from '../../src/components/dashboard/SpendingSimulatorCard';
+import GoalCard from '../../src/components/GoalCard';
+import MonthlyConsolidatedExcel from '../../src/components/dashboard/MonthlyConsolidatedExcel';
+import ProjectedTimeline from '../../src/components/dashboard/ProjectedTimeline';
+import { TransactionTimeline } from '../../src/components/TransactionTimeline';
+import SpendingCapacity from '../../src/components/SpendingCapacity';
+import AddTransactionModal from '../../src/components/AddTransactionModal';
 
 export default function Dashboard() {
   const router = useRouter();
   const [targetDate, setTargetDate] = useState<Date>(new Date());
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showSimulator, setShowSimulator] = useState(false);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'summary'>('summary');
-  const [simulations, setSimulations] = useState<any[]>([]);
-  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'summary' | 'timeline'>('summary');
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [activeSimulations, setActiveSimulations] = useState<any[]>([]);
+
+  const { 
+    accounts, 
+    loading, 
+    refresh,
+    monthTransactions,
+    recentTransactions,
+    budgets,
+    goals,
+    futureTransactions,
+    recurringTransactions
+  } = useFinancialData();
 
   const monthOffset = useMemo(() => {
     const today = startOfMonth(new Date());
     const target = startOfMonth(targetDate);
-    const months = (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth());
-    return Math.max(0, months);
+    return Math.max(0, (target.getFullYear() - today.getFullYear()) * 12 + (target.getMonth() - today.getMonth()));
   }, [targetDate]);
 
-  const { analysis, loading, refresh } = useFinancialAnalysis(monthOffset);
-  const { transactions: projectedTransactions } = useProjectionTimeline(targetDate, simulations);
-  const { goals } = useGoals();
-
-  const isFuture = monthOffset > 0;
+  const { analysis } = useFinancialAnalysis(monthOffset, activeSimulations);
   const isCurrentMonth = isSameMonth(targetDate, new Date());
+  const isFuture = monthOffset > 0;
 
-  const chartData = useMemo(() => {
-    if (!analysis) return [];
-    // Mocking some data points for the chart based on current and projected liquidity
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-    return [
-      { timestamp: now - 30 * dayMs, value: analysis.netLiquidityCents * 0.9 },
-      { timestamp: now - 15 * dayMs, value: analysis.netLiquidityCents * 0.95 },
-      { timestamp: now, value: analysis.netLiquidityCents },
-      { timestamp: now + 30 * dayMs, value: analysis.monthlyOutlook?.projectedNetLiquidity || analysis.netLiquidityCents }
-    ];
-  }, [analysis]);
+  // Transações para exibição
+  const displayTransactions = isCurrentMonth 
+    ? (monthTransactions.length > 0 ? monthTransactions : recentTransactions)
+    : [];
 
-  if (loading && !analysis) {
-    return (
-      <SafeAreaView className="flex-1 bg-[#050505]">
-        <View className="px-4 py-10">
-          <DashboardSkeleton />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // Transações projetadas para a Timeline (Lógica igual à Web)
+  const projectionTransactions = useMemo(() => {
+    if (!isFuture) return [];
+    const targetMonth = startOfMonth(targetDate);
+    
+    const filteredFuture = futureTransactions.filter(t => isSameMonth(new Date(t.date), targetMonth));
+    
+    const virtualRecurring = recurringTransactions
+      .filter(r => r.status === 'active')
+      .map(r => ({
+        id: `virtual-${r.id}`,
+        description: r.description,
+        amount_cents: r.amount_cents,
+        transaction_type: r.transaction_type,
+        date: targetMonth.toISOString(),
+        category: r.category_id,
+        isRecurring: true
+      }));
+
+    const simulations = activeSimulations.flatMap((sim, simIdx) => {
+      const installments = sim.installments || 1;
+      const monthlyAmount = Math.round(sim.amount_cents / installments);
+      const results = [];
+      for (let i = 0; i < installments; i++) {
+        const simDate = addMonths(new Date(), i);
+        if (isSameMonth(simDate, targetDate)) {
+          results.push({
+            id: `sim-tx-${simIdx}-${i}`,
+            description: `Simulado: ${sim.description || 'Compra'} (${i + 1}/${installments})`,
+            amount_cents: monthlyAmount,
+            transaction_type: "EXPENSE",
+            date: simDate.toISOString(),
+            category: "Simulação"
+          });
+        }
+      }
+      return results;
+    });
+
+    return [...filteredFuture, ...virtualRecurring, ...simulations];
+  }, [isFuture, targetDate, futureTransactions, recurringTransactions, activeSimulations]);
+
+  // Itens para o resumo consolidado
+  const consolidatedItems = useMemo(() => {
+    const transactionsToUse = isFuture ? projectionTransactions : displayTransactions;
+    return transactionsToUse.map((t: any) => ({
+      name: t.description,
+      value: t.amount_cents,
+      type: t.transaction_type,
+      category: t.category?.name || t.category || "Geral",
+      isInstallment: t.installment_total > 1,
+      isRecurring: t.isRecurring
+    }));
+  }, [isFuture, projectionTransactions, displayTransactions]);
+
+  const totalIncome = useMemo(() => 
+    consolidatedItems.filter((i: any) => i.type === "INCOME").reduce((sum: number, i: any) => sum + i.value, 0)
+  , [consolidatedItems]);
+
+  const totalExpenses = useMemo(() => 
+    consolidatedItems.filter((i: any) => i.type === "EXPENSE").reduce((sum: number, i: any) => sum + i.value, 0)
+  , [consolidatedItems]);
+
+  const handleSimulate = useCallback((sim: any) => {
+    setActiveSimulations(sim ? [sim] : []);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <View className="flex-1 bg-[#050505]">
       <ScrollView 
-        className="flex-1 px-4 py-6"
+        className="flex-1 px-4 pt-4"
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#fff" />}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#10b981" />
-        }
       >
-        <View className="flex-row items-center justify-between mb-8">
-          <View>
-            <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">
-              {monthOffset > 0 ? 'Projeção Futura' : 'Tempo Real'}
-            </Text>
-            <Text className="text-white text-4xl font-black tracking-tighter">
-              Ves<Text className="text-violet-500">per</Text>
-            </Text>
+        {/* ROW 1: HUD Principal */}
+        {analysis ? (
+          <UnifiedHeader 
+            monthOffset={monthOffset}
+            targetDate={targetDate}
+            netLiquidityCents={analysis.netLiquidityCents}
+            accumulatedBalanceCents={analysis.accumulatedBalanceCents}
+            totalConsolidatedDebtCents={analysis.totalConsolidatedDebtCents}
+            monthlyOutlook={analysis.monthlyOutlook}
+            isCrisisMode={analysis.isCrisisMode}
+            debtExit={analysis.debtExit}
+            weeklySurvival={analysis.weeklySurvival}
+            onAddTransaction={() => setShowAddTransaction(true)}
+          />
+        ) : (
+          <View className="h-64 bg-white/5 rounded-[40px] animate-pulse mb-8" />
+        )}
+
+        {/* ROW 2: Grid de Ações Rápidas */}
+        <View className="flex-row gap-4 mb-8">
+           <View className="flex-1">
+              <BillCommitmentCard 
+                immediateCardDebt={analysis?.monthlyOutlook?.immediateCardDebt || 0}
+                upcomingCardDebt={analysis?.monthlyOutlook?.upcomingCardDebt || 0}
+                scheduledExpenses={analysis?.monthlyOutlook?.scheduledOnly || 0}
+                budgetReserves={analysis?.monthlyOutlook?.budgetReserves || 0}
+                totalPlanned={analysis?.monthlyOutlook?.plannedExpenses || 0}
+                isCrisis={analysis?.isCrisisMode}
+              />
+           </View>
+        </View>
+
+        <View className="flex-row gap-4 mb-8">
+          <View className="flex-1">
+            <MonthNavigator 
+              selectedDate={targetDate} 
+              onDateChange={setTargetDate} 
+            />
           </View>
-          <View className="flex-row gap-3">
-            <Pressable 
-              onPress={() => router.push('/profile')}
-              className="w-12 h-12 bg-white/[0.03] rounded-2xl items-center justify-center border border-white/10"
-            >
-              <User color="rgba(255,255,255,0.6)" size={20} />
-            </Pressable>
-            <Pressable 
-              onPress={() => setShowAddModal(true)}
-              className="w-12 h-12 bg-violet-600 rounded-2xl items-center justify-center shadow-lg shadow-violet-600/30"
-            >
-              <Plus color="#fff" size={24} />
-            </Pressable>
+          <View className="flex-1">
+            <SpendingSimulatorCard onPress={() => router.push('/simulator' as any)} />
           </View>
         </View>
 
-        <MonthNavigator 
-          selectedDate={targetDate} 
-          onDateChange={setTargetDate} 
-        />
-
-        <SurvivalCeiling />
-
-        <LiquidityCard 
-          netLiquidityCents={analysis?.netLiquidityCents || 0}
-          totalAssetsCents={analysis?.accumulatedBalanceCents || 0}
-          isCrisis={analysis?.monthlyOutlook?.isCrisisMode}
-        />
-
-        {isCurrentMonth && (
-          <View className="flex-row gap-4 mb-10">
-            <View className="flex-1 p-6 bg-white/[0.03] border border-white/10 rounded-[32px]">
-              <Text className="text-white/40 text-[10px] font-black uppercase mb-1">Entradas</Text>
-              <Text className="text-emerald-400 text-xl font-bold">
-                {formatCurrency(analysis?.incomeCents || 0)}
-              </Text>
-            </View>
-            <View className="flex-1 p-6 bg-white/[0.03] border border-white/10 rounded-[32px]">
-              <Text className="text-white/40 text-[10px] font-black uppercase mb-1">Saídas</Text>
-              <Text className="text-red-400 text-xl font-bold">
-                {formatCurrency(analysis?.expenseCents || 0)}
-              </Text>
+        {/* ROW 3: Tab Selector (Resumo / Timeline) */}
+        <View className="bg-white/[0.03] border border-white/10 rounded-[40px] overflow-hidden mb-8 shadow-2xl">
+          <View className="flex-row items-center justify-between p-5 border-b border-white/5">
+            <View className="flex-row bg-white/5 p-1 rounded-2xl border border-white/5">
+              <Pressable 
+                onPress={() => {
+                  setActiveTab('summary');
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                className={`flex-row items-center gap-2 px-6 py-2.5 rounded-xl ${activeTab === 'summary' ? 'bg-violet-600 shadow-lg shadow-violet-600/20' : ''}`}
+              >
+                <Calculator size={14} color={activeTab === 'summary' ? '#fff' : 'rgba(255,255,255,0.4)'} />
+                <Text className={`text-[10px] font-black uppercase tracking-widest ${activeTab === 'summary' ? 'text-white' : 'text-white/40'}`}>Fluxo Mensal</Text>
+              </Pressable>
+              <Pressable 
+                onPress={() => {
+                  setActiveTab('timeline');
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                className={`flex-row items-center gap-2 px-6 py-2.5 rounded-xl ${activeTab === 'timeline' ? 'bg-violet-600 shadow-lg shadow-violet-600/20' : ''}`}
+              >
+                <History size={14} color={activeTab === 'timeline' ? '#fff' : 'rgba(255,255,255,0.4)'} />
+                <Text className={`text-[10px] font-black uppercase tracking-widest ${activeTab === 'timeline' ? 'text-white' : 'text-white/40'}`}>Timeline</Text>
+              </Pressable>
             </View>
           </View>
-        )}
 
-        {!isCurrentMonth && (
-           <NetWorthChart data={chartData} />
-        )}
+          <View className="p-2">
+            {activeTab === 'summary' ? (
+              <MonthlyConsolidatedExcel 
+                income={totalIncome}
+                expenses={totalExpenses}
+                balance={totalIncome - totalExpenses}
+                items={consolidatedItems}
+                monthName={format(targetDate, "MMMM 'de' yyyy", { locale: ptBR })}
+              />
+            ) : (
+              isFuture ? (
+                <ProjectedTimeline transactions={projectionTransactions} />
+              ) : (
+                <TransactionTimeline transactions={displayTransactions} />
+              )
+            )}
+          </View>
+        </View>
 
-        {/* Goals Section */}
-        {isCurrentMonth && (
+        {/* ROW 4: Metas (Apenas se mês atual) */}
+        {isCurrentMonth && goals.length > 0 && (
           <View className="mb-10">
             <View className="flex-row items-center justify-between mb-4 px-1">
-              <Text className="text-white/60 text-xs font-bold uppercase tracking-[2px]">
-                Suas Metas
-              </Text>
+              <Text className="text-white/60 text-[10px] font-black uppercase tracking-[3px]">Suas Metas</Text>
               <Pressable onPress={() => router.push('/goals')}>
-                <Text className="text-emerald-400 text-xs font-bold">Ver todas</Text>
+                <Text className="text-emerald-400 text-[10px] font-black uppercase">Ver todas</Text>
               </Pressable>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
               {goals.slice(0, 3).map((goal) => (
-                <View key={goal.id} style={{ width: 280, marginRight: 16 }}>
+                <View key={goal.id} style={{ width: 300, marginRight: 16 }}>
                   <GoalCard 
                     goal={goal} 
                     onPress={() => router.push('/goals')}
                   />
                 </View>
               ))}
-              {goals.length === 0 && (
-                <Pressable 
-                  onPress={() => router.push('/goals')}
-                  className="bg-white/[0.03] border border-white/10 border-dashed rounded-[32px] p-6 items-center justify-center"
-                  style={{ width: 280 }}
-                >
-                  <Target size={24} color="rgba(255,255,255,0.2)" />
-                  <Text className="text-white/20 text-[10px] font-black uppercase mt-2">Criar Primeira Meta</Text>
-                </Pressable>
-              )}
             </ScrollView>
           </View>
         )}
 
-        {/* Tab Selector */}
-        <View className="flex-row bg-white/5 p-1 rounded-2xl border border-white/10 mb-6">
-          <Pressable 
-            onPress={() => {
-              setActiveTab('summary');
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }}
-            className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${
-              activeTab === 'summary' ? 'bg-violet-600' : ''
-            }`}
-          >
-            <Calculator size={14} color={activeTab === 'summary' ? '#fff' : 'rgba(255,255,255,0.4)'} />
-            <Text className={`ml-2 text-[10px] font-black uppercase tracking-widest ${
-              activeTab === 'summary' ? 'text-white' : 'text-white/40'
-            }`}>Resumo</Text>
-          </Pressable>
-          <Pressable 
-            onPress={() => {
-              setActiveTab('timeline');
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }}
-            className={`flex-1 flex-row items-center justify-center py-3 rounded-xl ${
-              activeTab === 'timeline' ? 'bg-violet-600' : ''
-            }`}
-          >
-            <History size={14} color={activeTab === 'timeline' ? '#fff' : 'rgba(255,255,255,0.4)'} />
-            <Text className={`ml-2 text-[10px] font-black uppercase tracking-widest ${
-              activeTab === 'timeline' ? 'text-white' : 'text-white/40'
-            }`}>Linha do Tempo</Text>
-          </Pressable>
-        </View>
-
-        {activeTab === 'summary' ? (
-          <View>
-             {/* Content for Summary - already covered by LiquidityCard and stats for now */}
-             <TransactionList 
-               limit={5} 
-               onEdit={(tx) => setEditingTransaction(tx)}
-             />
+        {/* ROW 5: Orçamentos (Spending Capacity) */}
+        <View className="mb-20">
+          <View className="flex-row items-center justify-between mb-4 px-1">
+            <Text className="text-white/60 text-[10px] font-black uppercase tracking-[3px]">Capacidade de Gasto</Text>
           </View>
-        ) : (
-          <View>
-            {isFuture && (
-              <View className="mb-6 flex-row gap-2">
-                <Pressable 
-                  onPress={() => setShowSimulator(true)}
-                  className="flex-1 flex-row items-center justify-center bg-violet-600/10 border border-violet-600/20 py-4 rounded-2xl"
-                >
-                  <Sparkles size={14} color="#8b5cf6" className="mr-2" />
-                  <Text className="text-violet-400 text-[10px] font-black uppercase tracking-widest">Simular Gasto</Text>
-                </Pressable>
-                
-                {simulations.length > 0 && (
-                  <Pressable 
-                    onPress={() => setSimulations([])}
-                    className="w-14 items-center justify-center bg-rose-500/10 border border-rose-500/20 rounded-2xl"
-                  >
-                    <Trash2 size={16} color="#fb7185" />
-                  </Pressable>
-                )}
-              </View>
-            )}
-            {isFuture ? (
-              <ProjectedTimeline transactions={projectedTransactions} />
-            ) : (
-              <TransactionList 
-                onEdit={(tx) => setEditingTransaction(tx)}
+          <View className="space-y-4">
+            {budgets.map((budget) => (
+              <SpendingCapacity 
+                key={budget.id}
+                category={budget.category_id || 'Geral'}
+                spent={budget.spent_cents || 0}
+                limit={budget.amount_cents}
               />
-            )}
+            ))}
           </View>
-        )}
-
-        {/* Spacer for FAB */}
-        <View className="h-24" />
-
+        </View>
       </ScrollView>
 
-      {/* FAB */}
-      {isCurrentMonth && (
-        <Pressable 
-          onPress={() => setShowAddModal(true)}
-          className="absolute bottom-10 right-6 w-16 h-16 bg-white rounded-full items-center justify-center shadow-xl shadow-white/20"
-        >
-          <Plus color="#000" size={32} />
-        </Pressable>
-      )}
-
-      {(showAddModal || editingTransaction) && (
+      {showAddTransaction && (
         <AddTransactionModal 
-          transaction={editingTransaction}
-          onClose={() => {
-            setShowAddModal(false);
-            setEditingTransaction(null);
-          }}
+          onClose={() => setShowAddTransaction(false)}
           onSave={() => {
-            setShowAddModal(false);
-            setEditingTransaction(null);
+            setShowAddTransaction(false);
             refresh();
           }}
         />
       )}
-
-      {showSimulator && (
-        <SpendingSimulator 
-          onClose={() => setShowSimulator(false)}
-          onSimulate={(sim) => {
-            setSimulations(prev => [...prev, sim]);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          }}
-        />
-      )}
-    </SafeAreaView>
+    </View>
   );
 }

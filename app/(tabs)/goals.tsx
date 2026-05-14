@@ -1,82 +1,86 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, SafeAreaView, ActivityIndicator, RefreshControl, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus, Target } from 'lucide-react-native';
-import { useGoals } from '../../src/hooks/useGoals';
+import { View, Text, ScrollView, RefreshControl, Pressable, ActivityIndicator } from 'react-native';
+import { Target, Plus } from 'lucide-react-native';
+import { useFinancialData } from '../../src/context/FinancialDataContext';
 import GoalCard from '../../src/components/GoalCard';
+import GoalRecommendations from '../../src/components/dashboard/GoalRecommendations';
 import AddGoalModal from '../../src/components/AddGoalModal';
 
 export default function GoalsScreen() {
-  const router = useRouter();
-  const { goals, loading, refresh, contribute, createGoal } = useGoals();
+  const { goals, loading, refresh } = useFinancialData();
   const [showAddModal, setShowAddModal] = useState(false);
 
   if (loading && goals.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
-        <ActivityIndicator color="#10b981" size="large" />
-      </SafeAreaView>
+      <View className="flex-1 bg-[#050505] items-center justify-center">
+        <ActivityIndicator color="#8b5cf6" size="large" />
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
-      {/* Premium Header */}
-      <View className="px-6 py-8 flex-row justify-between items-center">
-        <View className="flex-row items-center">
-          <Pressable 
-            onPress={() => router.back()}
-            className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center mr-4"
-          >
-            <ChevronLeft color="#fff" size={20} />
-          </Pressable>
-          <View>
-            <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Planejamento</Text>
-            <Text className="text-white text-2xl font-black tracking-tighter">Minhas Metas</Text>
-          </View>
-        </View>
-        <Pressable 
-          onPress={() => setShowAddModal(true)}
-          className="w-12 h-12 bg-violet-600 rounded-2xl items-center justify-center shadow-lg shadow-violet-600/30"
-        >
-          <Plus color="#fff" size={24} />
-        </Pressable>
-      </View>
-
+    <View className="flex-1 bg-[#050505]">
       <ScrollView 
-        className="flex-1 px-6"
+        className="flex-1 px-4 pt-12"
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#fff" />}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#8b5cf6" />
-        }
       >
+        <View className="flex-row items-center justify-between mb-8 px-1">
+          <View>
+            <Text className="text-white font-black text-3xl tracking-tighter">Metas</Text>
+            <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px] mt-1">Estratégia & Foco</Text>
+          </View>
+          <Pressable 
+            onPress={() => setShowAddModal(true)}
+            className="w-12 h-12 bg-violet-600 rounded-2xl items-center justify-center shadow-lg shadow-violet-600/20"
+          >
+            <Plus size={24} color="#fff" />
+          </Pressable>
+        </View>
+
+        {/* Recomendações Inteligentes */}
+        <GoalRecommendations onContribution={(goal) => console.log('Aporte:', goal)} />
+
+        <View className="mb-6 px-1">
+          <Text className="text-white/60 text-[10px] font-black uppercase tracking-[3px]">Seus Objetivos</Text>
+        </View>
+
         {goals.length === 0 ? (
-          <View className="py-20 items-center justify-center space-y-6">
-            <View className="w-20 h-20 bg-white/5 rounded-[32px] items-center justify-center border border-white/10">
-              <Target size={40} color="rgba(255,255,255,0.2)" />
+          <View className="flex-1 items-center justify-center py-20">
+            <View className="w-20 h-20 bg-white/5 rounded-[32px] items-center justify-center border border-white/10 mb-6">
+              <Target size={32} color="rgba(255,255,255,0.2)" />
             </View>
-            <View className="items-center">
-              <Text className="text-white text-xl font-bold">Nenhuma meta ativa</Text>
-              <Text className="text-white/40 text-center mt-2 px-10">
-                Defina seu primeiro objetivo para começar a visualizar o futuro do seu dinheiro.
-              </Text>
-              <Pressable 
-                onPress={() => setShowAddModal(true)}
-                className="mt-6 bg-white/5 border border-white/10 px-6 py-3 rounded-2xl"
-              >
-                <Text className="text-white font-bold">Criar Meta agora →</Text>
-              </Pressable>
-            </View>
+            <Text className="text-white font-black text-xl">Nenhuma meta ativa</Text>
+            <Text className="text-white/40 text-center px-10 mt-2 font-bold">
+              Defina seu primeiro objetivo para começar a visualizar o futuro do seu dinheiro.
+            </Text>
+            <Pressable 
+              onPress={() => setShowAddModal(true)}
+              className="mt-8 bg-violet-600 px-8 py-4 rounded-2xl"
+            >
+              <Text className="text-white font-black uppercase tracking-widest text-xs">Criar agora →</Text>
+            </Pressable>
           </View>
         ) : (
-          <View className="pb-10">
+          <View className="pb-20">
             {goals.map((goal) => (
               <GoalCard 
                 key={goal.id} 
                 goal={goal} 
-                onContribute={() => contribute(goal.id, 10000)} // Mock contribution for now
+                onPress={() => console.log('Detalhes:', goal)}
+                onContribution={() => console.log('Aporte:', goal)}
               />
             ))}
+
+            <Pressable 
+              onPress={() => setShowAddModal(true)}
+              className="mt-4 p-8 border-2 border-dashed border-white/5 rounded-[40px] items-center justify-center"
+            >
+              <View className="w-14 h-14 rounded-full bg-white/5 items-center justify-center mb-4">
+                <Plus size={28} color="rgba(255,255,255,0.1)" />
+              </View>
+              <Text className="text-white/20 font-black uppercase tracking-widest text-[10px]">Nova Meta</Text>
+            </Pressable>
           </View>
         )}
       </ScrollView>
@@ -84,12 +88,12 @@ export default function GoalsScreen() {
       {showAddModal && (
         <AddGoalModal 
           onClose={() => setShowAddModal(false)}
-          onSave={(data) => {
-            createGoal(data);
+          onSave={async () => {
             setShowAddModal(false);
+            refresh();
           }}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }

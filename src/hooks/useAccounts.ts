@@ -80,6 +80,10 @@ export function useAccounts() {
     }
   }
 
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
   return { 
     accounts, 
     loading, 

@@ -31,7 +31,7 @@ export default function Skeleton({ width, height, radius = 16, show = true, clas
 
 export function DashboardSkeleton() {
   return (
-    <View className="space-y-6">
+    <View className="flex-1 bg-[#050505] space-y-6">
       {/* Month Navigator Skeleton */}
       <View className="flex-row items-center justify-between mb-4">
          <Skeleton width={40} height={40} radius={12} />

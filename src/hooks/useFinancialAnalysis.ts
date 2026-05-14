@@ -1,155 +1,169 @@
-import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
-import {
-  calculateNetLiquidity,
-  calculateMonthlyOutlook,
+import { useMemo, useCallback } from "react";
+import { useFinancialData } from "../context/FinancialDataContext";
+import { 
+  calculateNetLiquidity, 
+  calculateMonthlyOutlook, 
   calculateTotalConsolidatedDebt,
   calculateAccumulatedBalance,
   calculateRealCycleLiquidity,
+  type MonthlyOutlook,
   calculateDebtExitProjection,
+  type DebtExitProjection,
   calculateWeeklySurvival,
+  type WeeklySurvival,
   calculateGoalProjections,
-  calculateAdvancedProjection
-} from '../domain/financial/financial-logic';
+  type GoalProjection,
+  simulateDetailedImpact,
+  type SimulationDetailedResult,
+  calculateAdvancedProjection,
+  type Simulation
+} from "../domain/financial/financial-logic";
 
-export function useFinancialAnalysis(monthOffset: number = 0, activeSimulations: any[] = []) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export type { SimulationDetailedResult, MonthlyOutlook, DebtExitProjection, GoalProjection };
 
-  async function fetchAllData() {
-    try {
-      setLoading(true);
-      const [
-        { data: accounts },
-        { data: recurring },
-        { data: transactions },
-        { data: budgets },
-        { data: goals },
-        { data: profile }
-      ] = await Promise.all([
-        supabase.from('accounts').select('*'),
-        supabase.from('recurring_transactions').select('*'),
-        supabase.from('transactions').select('*'),
-        supabase.from('budgets').select('*'),
-        supabase.from('goals').select('*'),
-        supabase.from('profiles').select('financial_health_score').single()
-      ]);
+export interface FinancialAnalysis {
+  netLiquidityCents: number;
+  totalConsolidatedDebtCents: number;
+  accumulatedBalanceCents: number;
+  monthlyOutlook: MonthlyOutlook;
+  healthScore: number;
+  isSurvivalMode: boolean;
+  isCrisisMode: boolean;
+  debtExit: DebtExitProjection;
+  weeklySurvival: WeeklySurvival;
+  goalProjections: GoalProjection[];
+  simulateDetailedImpact: (amountCents: number, installments: number) => SimulationDetailedResult;
+  refresh: () => void;
+  loading: boolean;
+  analysis: any; // Keep compatibility with existing dashboard usage if needed
+}
 
-      const safeAccounts = accounts || [];
-      const safeRecurring = recurring || [];
-      const safeTransactions = transactions || [];
-      const safeBudgets = budgets || [];
-      const safeGoals = goals || [];
+export function useFinancialAnalysis(monthOffset: number = 0, activeSimulations: Simulation[] = []): any {
+  const { 
+    accounts, 
+    scheduledIncomeCents, 
+    scheduledExpensesCents, 
+    budgets,
+    goals,
+    recurringIncomeCents,
+    recurringExpensesCents,
+    healthScore,
+    monthTransactions,
+    futureTransactions,
+    recurringTransactions,
+    loading,
+    refresh
+  } = useFinancialData();
 
-      // Filtrar transações do mês atual para o ciclo de liquidez
-      const now = new Date();
-      const currentMonthTransactions = safeTransactions.filter(t => {
-        const d = new Date(t.date);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      });
+  const netLiquidity = useMemo(() => calculateNetLiquidity(accounts), [accounts]);
+  const consolidatedDebt = useMemo(() => calculateTotalConsolidatedDebt(accounts), [accounts]);
+  const currentAssets = useMemo(() => calculateAccumulatedBalance(accounts), [accounts]);
 
-      // Transações futuras (parcelamentos)
-      const futureTransactions = safeTransactions.filter(t => new Date(t.date) > now);
+  const realCycleLiquidity = useMemo(() => 
+    calculateRealCycleLiquidity({
+      accounts,
+      currentMonthTransactions: monthTransactions
+    }), [accounts, monthTransactions]);
 
-      const netLiquidity = calculateNetLiquidity(safeAccounts);
-      const consolidatedDebt = calculateTotalConsolidatedDebt(safeAccounts);
-      const currentAssets = calculateAccumulatedBalance(safeAccounts);
+  const monthlyOutlook = useMemo(() => {
+    const confirmedIncomeThisMonth = (monthTransactions || [])
+      .filter(t => t.transaction_type === "INCOME" && t.is_paid === true)
+      .reduce((sum, t) => sum + (Number(t.amount_cents) || 0), 0);
 
-      const realCycleLiquidity = calculateRealCycleLiquidity({
-        accounts: safeAccounts,
-        currentMonthTransactions
-      });
+    const effectiveScheduledIncome = scheduledIncomeCents || recurringIncomeCents;
+    const effectiveScheduledExpenses = scheduledExpensesCents || recurringExpensesCents;
+    const incomeForOutlook = confirmedIncomeThisMonth > 0 ? 0 : effectiveScheduledIncome;
 
-      // Recorrentes em formato esperado pela lógica
-      const recurringIncomeCents = safeRecurring
-        .filter(r => r.transaction_type === 'INCOME' && r.status === 'active')
-        .reduce((sum, r) => sum + (r.amount_cents || 0), 0);
+    const baseOutlook = calculateMonthlyOutlook({
+      accounts,
+      scheduledIncomeCents: incomeForOutlook,
+      scheduledExpensesCents: effectiveScheduledExpenses,
+      recurringIncomeCents,
+      recurringExpensesCents,
+      budgets,
+      netLiquidityCents: netLiquidity,
+      monthOffset,
+      activeSimulations,
+      futureTransactions,
+      allTransactions: monthTransactions,
+      recurringTransactions,
+      goals
+    });
 
-      const recurringExpensesCents = safeRecurring
-        .filter(r => r.transaction_type === 'EXPENSE' && r.status === 'active')
-        .reduce((sum, r) => sum + (r.amount_cents || 0), 0);
-
-      const monthlyOutlook = calculateMonthlyOutlook({
-        accounts: safeAccounts,
-        scheduledIncomeCents: recurringIncomeCents, // Simplificação para mobile inicial
-        scheduledExpensesCents: recurringExpensesCents,
-        recurringIncomeCents,
-        recurringExpensesCents,
-        budgets: safeBudgets,
-        netLiquidityCents: netLiquidity,
-        monthOffset,
-        activeSimulations,
-        futureTransactions,
-        allTransactions: currentMonthTransactions,
-        recurringTransactions: safeRecurring,
-        goals: safeGoals
-      });
-
-      const projectedNetLiquidity = monthOffset === 0
-        ? realCycleLiquidity
-        : calculateAdvancedProjection({
+    const projectedNetLiquidity = monthOffset === 0
+      ? realCycleLiquidity
+      : calculateAdvancedProjection({
           currentNetLiquidity: netLiquidity,
-          recurringTransactions: safeRecurring,
+          recurringTransactions,
           futureTransactions,
-          goals: safeGoals,
-          budgets: safeBudgets,
+          goals,
+          budgets,
           monthOffset,
           activeSimulations,
-          scheduledIncomeCents: recurringIncomeCents,
-          scheduledExpensesCents: recurringExpensesCents
+          scheduledIncomeCents: incomeForOutlook,
+          scheduledExpensesCents: effectiveScheduledExpenses,
+          allTransactions: monthTransactions
         });
 
-      const activeNetLiquidity = monthOffset === 0 ? realCycleLiquidity : projectedNetLiquidity;
+    return {
+      ...baseOutlook,
+      balanceAtMonthEnd: monthOffset === 0 ? baseOutlook.balanceAtMonthEnd : projectedNetLiquidity,
+      projectedNetLiquidity
+    };
+  }, [accounts, scheduledIncomeCents, scheduledExpensesCents, recurringIncomeCents, recurringExpensesCents, budgets, netLiquidity, monthOffset, futureTransactions, goals, activeSimulations, monthTransactions, recurringTransactions, realCycleLiquidity]);
 
-      const debtExit = calculateDebtExitProjection({
-        netLiquidityCents: netLiquidity,
-        recurringIncomeCents,
-        recurringExpensesCents,
-        budgets: safeBudgets
-      });
+  const activeNetLiquidity = monthOffset === 0 ? realCycleLiquidity : (monthlyOutlook.projectedNetLiquidity ?? netLiquidity);
 
-      const goalProjections = calculateGoalProjections({
-        debtExit,
-        goals: safeGoals
-      });
+  const debtExit = useMemo(() => {
+    return calculateDebtExitProjection({
+      netLiquidityCents: netLiquidity,
+      recurringIncomeCents,
+      recurringExpensesCents,
+      budgets
+    });
+  }, [netLiquidity, recurringIncomeCents, recurringExpensesCents, budgets]);
 
-      const weeklySurvival = calculateWeeklySurvival({
-        monthlySurplusCents: Math.max(0, monthlyOutlook.balanceAtMonthEnd),
-        currentMonthTransactions
-      });
+  const goalProjections = useMemo(() => {
+    return calculateGoalProjections({
+      debtExit,
+      goals
+    });
+  }, [debtExit, goals]);
+  
+  const weeklySurvival = useMemo(() => {
+    return calculateWeeklySurvival({
+      monthlySurplusCents: Math.max(0, monthlyOutlook.balanceAtMonthEnd),
+      currentMonthTransactions: monthTransactions
+    });
+  }, [monthlyOutlook.balanceAtMonthEnd, monthTransactions]);
 
-      setData({
-        netLiquidityCents: activeNetLiquidity,
-        totalConsolidatedDebtCents: monthOffset === 0 ? consolidatedDebt : monthlyOutlook.totalDebt,
-        accumulatedBalanceCents: monthOffset === 0 ? currentAssets : monthlyOutlook.totalAssets,
-        monthlyOutlook: {
-          ...monthlyOutlook,
-          balanceAtMonthEnd: monthOffset === 0 ? monthlyOutlook.balanceAtMonthEnd : projectedNetLiquidity,
-          projectedNetLiquidity
-        },
-        debtExit,
-        weeklySurvival,
-        goalProjections,
-        healthScore: profile?.financial_health_score || 0,
-        // Mantendo compatibilidade com o que o useFinancialSummary retornava
-        incomeCents: recurringIncomeCents,
-        expenseCents: recurringExpensesCents
-      });
+  const simulateDetailedImpactFn = useCallback((amountCents: number, installments: number) => 
+    simulateDetailedImpact({
+      amountCents,
+      installments,
+      netLiquidityCents: netLiquidity,
+      monthlySurplus: debtExit.monthlySurplus,
+      currentExitDate: debtExit.exitDate,
+      currentBalanceCents: currentAssets
+    }), [netLiquidity, debtExit.monthlySurplus, debtExit.exitDate, currentAssets]);
 
-    } catch (error) {
-      console.error('Error in useFinancialAnalysis:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchAllData();
-  }, [monthOffset, activeSimulations.length]);
+  const analysis = useMemo(() => ({
+    netLiquidityCents: activeNetLiquidity,
+    totalConsolidatedDebtCents: monthOffset === 0 ? consolidatedDebt : monthlyOutlook.totalDebt,
+    accumulatedBalanceCents: monthOffset === 0 ? currentAssets : monthlyOutlook.totalAssets,
+    monthlyOutlook,
+    healthScore,
+    isSurvivalMode: monthlyOutlook.balanceAtMonthEnd < 0 || activeNetLiquidity < 0,
+    isCrisisMode: activeNetLiquidity < 0 && monthlyOutlook.balanceAtMonthEnd < 0,
+    debtExit,
+    weeklySurvival,
+    goalProjections,
+    simulateDetailedImpact: simulateDetailedImpactFn
+  }), [activeNetLiquidity, consolidatedDebt, currentAssets, monthlyOutlook, healthScore, debtExit, weeklySurvival, goalProjections, simulateDetailedImpactFn, monthOffset]);
 
   return {
-    analysis: data,
+    analysis,
     loading,
-    refresh: fetchAllData
+    refresh
   };
 }

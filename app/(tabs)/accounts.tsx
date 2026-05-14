@@ -26,14 +26,14 @@ export default function AccountsPage() {
 
   if (loading && accounts.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
+      <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
         <ActivityIndicator color="#10b981" size="large" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
       {/* Premium Header */}
       <View className="px-6 py-8 flex-row justify-between items-center">
         <View className="flex-row items-center">
