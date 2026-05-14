@@ -1,0 +1,87 @@
+export interface Category {
+  id: string;
+  name: string;
+  type: "EXPENSE" | "INCOME" | "TRANSFER";
+  user_id?: string;
+  color_hex?: string;
+}
+
+export interface Account {
+  id: string;
+  name: string;
+  type: string;
+  balance_cents: number;
+  credit_limit_cents?: number;
+  current_invoice_cents?: number;
+  ceiling_impact_cents?: number;
+  closed_invoice_cents?: number;
+  closed_invoice_month?: string;
+  open_invoice_cents?: number;
+  open_invoice_month?: string;
+  total_debt_cents?: number;
+  closing_day?: number;
+  due_day?: number;
+  color_hex?: string;
+  user_id: string;
+}
+
+export interface Goal {
+  id: string;
+  name: string;
+  target_amount_cents: number;
+  current_amount_cents: number;
+  monthly_contribution_cents: number;
+  priority: number;
+  status: "PLANNING" | "ACTIVE" | "COMPLETED";
+  deadline?: string;
+  projected_completion_date?: string;
+  color_hex?: string;
+  user_id?: string;
+}
+
+export interface RecurringTransaction {
+  id: string;
+  description: string;
+  amount_cents: number;
+  transaction_type: "INCOME" | "EXPENSE";
+  frequency: "monthly" | "weekly" | "yearly";
+  next_date: string;
+  status: "active" | "paused" | "cancelled";
+  category_id?: string;
+  account_id?: string;
+  user_id?: string;
+  is_primary_income?: boolean;
+  excluded_months?: string[];
+}
+
+export interface Budget {
+  id: string;
+  category_id: string;
+  amount_cents: number;
+  spent_cents?: number;
+  limit_cents?: number;
+  user_id?: string;
+}
+
+export interface Transaction {
+  id: string;
+  description: string;
+  amount_cents: number;
+  transaction_type: "INCOME" | "EXPENSE" | "TRANSFER";
+  date: string;
+  account_id: string;
+  category_id?: string | null;
+  user_id: string;
+  is_paid: boolean;
+  is_legacy_debt?: boolean;
+  installment_current?: number;
+  installment_total?: number;
+  source?: string;
+  category?: Category;
+  account?: Account;
+  is_adjustment?: boolean;
+  source_metadata?: {
+    recurring_id?: string;
+    [key: string]: any;
+  };
+}
