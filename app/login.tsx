@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, SafeAreaView, KeyboardAvoidingView, P
 import { useRouter } from 'expo-router';
 import { Mail, Lock, ArrowRight, Sparkles, Eye, EyeOff, Globe, ShieldCheck } from 'lucide-react-native';
 import { MotiView, AnimatePresence } from 'moti';
-import { supabase } from '../src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
