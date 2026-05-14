@@ -7,7 +7,7 @@ import {
   Plus, 
   Target
 } from 'lucide-react-native';
-import { format, startOfMonth, isSameMonth, addMonths } from 'date-fns';
+import { format, startOfMonth, isSameMonth, addMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
 import { useFinancialAnalysis } from '../../src/hooks/useFinancialAnalysis';
@@ -81,7 +81,7 @@ export default function Dashboard() {
     const simulations = activeSimulations.flatMap((sim, simIdx) => {
       const installments = sim.installments || 1;
       const monthlyAmount = Math.round(sim.amount_cents / installments);
-      const results = [];
+      const results: any[] = [];
       for (let i = 0; i < installments; i++) {
         const simDate = addMonths(new Date(), i);
         if (isSameMonth(simDate, targetDate)) {
@@ -122,6 +122,14 @@ export default function Dashboard() {
     consolidatedItems.filter((i: any) => i.type === "EXPENSE").reduce((sum: number, i: any) => sum + i.value, 0)
   , [consolidatedItems]);
 
+  const handleJumpToDebtExit = useCallback(() => {
+    const target = analysis?.debtExit?.exitDate;
+    if (target) {
+      setTargetDate(new Date(target));
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [analysis?.debtExit?.exitDate]);
+
   const handleSimulate = useCallback((sim: any) => {
     setActiveSimulations(sim ? [sim] : []);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -147,6 +155,7 @@ export default function Dashboard() {
             debtExit={analysis.debtExit}
             weeklySurvival={analysis.weeklySurvival}
             onAddTransaction={() => setShowAddTransaction(true)}
+            onJumpToDebtExit={handleJumpToDebtExit}
           />
         ) : (
           <View className="h-64 bg-white/5 rounded-[40px] animate-pulse mb-8" />

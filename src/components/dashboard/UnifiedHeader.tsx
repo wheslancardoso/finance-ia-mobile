@@ -18,6 +18,7 @@ interface UnifiedHeaderProps {
   debtExit: any;
   weeklySurvival: any;
   onAddTransaction: () => void;
+  onJumpToDebtExit?: () => void;
 }
 
 export default function UnifiedHeader({
@@ -30,7 +31,8 @@ export default function UnifiedHeader({
   isCrisisMode,
   debtExit,
   weeklySurvival,
-  onAddTransaction
+  onAddTransaction,
+  onJumpToDebtExit
 }: UnifiedHeaderProps) {
   const isFuture = monthOffset > 0;
   const isRecoveryMode = netLiquidityCents < -100;
@@ -61,16 +63,24 @@ export default function UnifiedHeader({
                 <Wallet size={24} color={isCrisisMode ? '#f87171' : 'rgba(255,255,255,0.6)'} />
               </View>
               <View>
-                <Text className="text-[10px] font-black text-white/30 uppercase tracking-[3px]">
-                  {isFuture ? `Time Machine: ${format(targetDate, "MMMM", { locale: ptBR })}` : "Visão Consolidada"}
-                </Text>
+                <View className="flex-row items-center gap-2">
+                  <MotiView
+                    from={{ opacity: 0.4 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ type: 'timing', duration: 1000, loop: true, repeatReverse: true }}
+                    className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+                  />
+                  <Text className="text-[10px] font-black text-white/30 uppercase tracking-[3px]">
+                    {isFuture ? `Time Machine: ${format(targetDate, "MMMM", { locale: ptBR })}` : "Tempo Real"}
+                  </Text>
+                </View>
                 <Text className="text-[10px] font-bold text-white/20 mt-1">
                   {isFuture ? "Projeção acumulada de liquidez" : "Saldo disponível para o ciclo"}
                 </Text>
               </View>
             </View>
 
-            {!isFuture && (
+            {!isFuture ? (
               <Pressable 
                 onPress={onAddTransaction}
                 className="bg-white px-5 py-3 rounded-2xl flex-row items-center gap-2 shadow-xl"
@@ -78,6 +88,15 @@ export default function UnifiedHeader({
                 <Plus size={16} color="#000" />
                 <Text className="text-black font-black text-[10px] uppercase tracking-widest">Nova</Text>
               </Pressable>
+            ) : (
+              isRecoveryMode && onJumpToDebtExit && (
+                <Pressable 
+                  onPress={onJumpToDebtExit}
+                  className="bg-amber-500/10 border border-amber-500/20 px-4 py-3 rounded-2xl flex-row items-center gap-2"
+                >
+                  <Text className="text-amber-500 font-black text-[9px] uppercase tracking-widest">Ver Saída</Text>
+                </Pressable>
+              )
             )}
           </View>
 
@@ -122,7 +141,7 @@ export default function UnifiedHeader({
                 <Text className={`text-[8px] font-black uppercase tracking-widest ${
                   isCrisisMode ? 'text-red-400' : 'text-emerald-400'
                 }`}>
-                  {isCrisisMode ? "Crítico" : "Ok"}
+                  {isCrisisMode ? "Crítico" : "Saudável"}
                 </Text>
               </View>
             </View>
