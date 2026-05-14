@@ -10,20 +10,20 @@ import {
 import { format, startOfMonth, isSameMonth, addMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
-import { useFinancialAnalysis } from '../../src/hooks/useFinancialAnalysis';
-import { useFinancialData } from '../../src/context/FinancialDataContext';
+import { useFinancialAnalysis } from '@/hooks/useFinancialAnalysis';
+import { useFinancialData } from '@/context/FinancialDataContext';
 
 // Components
-import UnifiedHeader from '../../src/components/dashboard/UnifiedHeader';
-import BillCommitmentCard from '../../src/components/dashboard/BillCommitmentCard';
-import MonthNavigator from '../../src/components/MonthNavigator';
-import SpendingSimulatorCard from '../../src/components/dashboard/SpendingSimulatorCard';
-import GoalCard from '../../src/components/GoalCard';
-import MonthlyConsolidatedExcel from '../../src/components/dashboard/MonthlyConsolidatedExcel';
-import ProjectedTimeline from '../../src/components/dashboard/ProjectedTimeline';
-import { TransactionTimeline } from '../../src/components/TransactionTimeline';
-import SpendingCapacity from '../../src/components/SpendingCapacity';
-import AddTransactionModal from '../../src/components/AddTransactionModal';
+import UnifiedHeader from '@/components/dashboard/UnifiedHeader';
+import BillCommitmentCard from '@/components/dashboard/BillCommitmentCard';
+import MonthNavigator from '@/components/MonthNavigator';
+import SpendingSimulatorCard from '@/components/dashboard/SpendingSimulatorCard';
+import GoalCard from '@/components/GoalCard';
+import MonthlyConsolidatedExcel from '@/components/dashboard/MonthlyConsolidatedExcel';
+import ProjectedTimeline from '@/components/dashboard/ProjectedTimeline';
+import { TransactionTimeline } from '@/components/TransactionTimeline';
+import SpendingCapacity from '@/components/SpendingCapacity';
+import AddTransactionModal from '@/components/AddTransactionModal';
 
 export default function Dashboard() {
   const router = useRouter();
