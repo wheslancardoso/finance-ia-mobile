@@ -1,0 +1,6 @@
+appId: host.exp.exponent # Expo Go (ajuste se usar Development Client)
+---
+- launchApp
+- tapOn: "Nova"
+- assertVisible: "Quando aconteceu?"
+- tapOn: "CANCELAR" # Ou o botão de fechar

@@ -99,8 +99,8 @@ export default function AccountsPage() {
             <AccountCard 
               key={account.id} 
               account={account} 
-              index={index} 
               onPress={setSelectedAccount} 
+              onEdit={setEditingAccount}
             />
           ))}
         </View>
@@ -115,8 +115,8 @@ export default function AccountsPage() {
             <AccountCard 
               key={account.id} 
               account={account} 
-              index={index} 
               onPress={setSelectedAccount} 
+              onEdit={setEditingAccount}
             />
           ))}
         </View>

@@ -8,9 +8,9 @@ import { formatCurrency } from '../utils/format';
 
 interface AccountCardProps {
   account: any;
-  onPress?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
+  onPress?: (account: any) => void;
+  onEdit?: (account: any) => void;
+  onDelete?: (account: any) => void;
   onPayInvoice?: () => void;
 }
 
@@ -85,7 +85,7 @@ export default function AccountCard({ account, onPress, onEdit, onDelete, onPayI
         </View>
         
         {/* Simplified Action Button for Mobile */}
-        <Pressable onPress={onEdit} className="p-2">
+        <Pressable onPress={() => onEdit?.(account)} className="p-2">
           <View className="w-1 h-1 bg-white/20 rounded-full mb-1" />
           <View className="w-1 h-1 bg-white/20 rounded-full mb-1" />
           <View className="w-1 h-1 bg-white/20 rounded-full" />
@@ -107,7 +107,7 @@ export default function AccountCard({ account, onPress, onEdit, onDelete, onPayI
                 {formatCurrency(hasClosedInvoice ? closedAmount : openAmount)}
               </Text>
               {onPress && (
-                <Pressable onPress={onPress}>
+                <Pressable onPress={() => onPress(account)}>
                   <Text className="text-[9px] font-black text-violet-400/60 uppercase tracking-widest border-b border-violet-400/20">Reajustar</Text>
                 </Pressable>
               )}
