@@ -21,8 +21,8 @@ export default function TabsLayout() {
             bottom: Platform.OS === 'ios' ? 24 : 16,
             left: 16,
             right: 16,
-            height: 68,
-            borderRadius: 34,
+            height: 64,
+            borderRadius: 32,
             backgroundColor: 'rgba(10, 10, 10, 0.95)',
             borderTopWidth: 0,
             borderWidth: 1,
@@ -32,28 +32,31 @@ export default function TabsLayout() {
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.3,
             shadowRadius: 20,
-            // Centralização vertical dos ícones
             paddingTop: 0,
             paddingBottom: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
           },
           tabBarItemStyle: {
-            // Força cada item a centralizar o ícone verticalmente
-            height: 68,
+            height: 64,
             justifyContent: 'center',
             alignItems: 'center',
             paddingTop: 0,
             paddingBottom: 0,
+          },
+          tabBarIconStyle: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 0,
+            marginBottom: 0,
+            alignSelf: 'center',
           },
           tabBarActiveTintColor: '#8b5cf6',
           tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.35)',
           tabBarShowLabel: false,
           tabBarBackground: () => (
             Platform.OS === 'ios' ? (
-              <BlurView intensity={40} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 34 }} />
+              <BlurView intensity={40} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 32 }} />
             ) : (
-              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(10, 10, 10, 0.95)', borderRadius: 34 }} />
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(10, 10, 10, 0.95)', borderRadius: 32 }} />
             )
           ),
         }}
@@ -63,7 +66,7 @@ export default function TabsLayout() {
           options={{
             title: 'Início',
             tabBarIcon: ({ color }) => (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
                 <LayoutDashboard size={22} color={color} />
               </View>
             ),
@@ -74,7 +77,7 @@ export default function TabsLayout() {
           options={{
             title: 'Extrato',
             tabBarIcon: ({ color }) => (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
                 <History size={22} color={color} />
               </View>
             ),
@@ -87,7 +90,7 @@ export default function TabsLayout() {
           options={{
             tabBarButton: ({ style }) => (
               <Pressable
-                style={[style as any, { top: -14, justifyContent: 'center', alignItems: 'center' }]}
+                style={[style as any, { top: -12, justifyContent: 'center', alignItems: 'center' }]}
                 onPress={() => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                   setShowAddModal(true);
@@ -98,8 +101,8 @@ export default function TabsLayout() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 54,
+                    height: 54,
                     borderRadius: 18,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -119,7 +122,7 @@ export default function TabsLayout() {
           options={{
             title: 'Metas',
             tabBarIcon: ({ color }) => (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
                 <Target size={22} color={color} />
               </View>
             ),
@@ -130,7 +133,7 @@ export default function TabsLayout() {
           options={{
             title: 'Config',
             tabBarIcon: ({ color }) => (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
                 <Settings size={22} color={color} />
               </View>
             ),
