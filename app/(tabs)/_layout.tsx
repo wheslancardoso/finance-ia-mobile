@@ -146,6 +146,32 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
+          name="accounts"
+          options={{
+            title: 'Contas',
+            tabBarButton: ({ onPress, accessibilityState }) => {
+              const focused = accessibilityState?.selected;
+              return (
+                <Pressable
+                  onPress={onPress}
+                  style={{
+                    flex: 1,
+                    height: 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Wallet
+                    size={22}
+                    color={focused ? '#8b5cf6' : 'rgba(255, 255, 255, 0.35)'}
+                  />
+                </Pressable>
+              );
+            }
+          }}
+        />
+
+        <Tabs.Screen
           name="goals"
           options={{
             title: 'Metas',
@@ -173,31 +199,11 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Config',
-            tabBarButton: ({ onPress, accessibilityState }) => {
-              const focused = accessibilityState?.selected;
-              return (
-                <Pressable
-                  onPress={onPress}
-                  style={{
-                    flex: 1,
-                    height: 64,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Settings
-                    size={22}
-                    color={focused ? '#8b5cf6' : 'rgba(255, 255, 255, 0.35)'}
-                  />
-                </Pressable>
-              );
-            }
+            href: null, // Oculta das abas físicas, agora acessível pelo topo
           }}
         />
 
         {/* Telas que ficam no grupo (tabs) mas não aparecem no rodapé */}
-        <Tabs.Screen name="accounts" options={{ href: null }} />
         <Tabs.Screen name="recurring" options={{ href: null }} />
         <Tabs.Screen name="reports" options={{ href: null }} />
         <Tabs.Screen name="categories" options={{ href: null }} />

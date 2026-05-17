@@ -61,9 +61,20 @@ export default function ProfileScreen() {
       >
         {/* Premium Header */}
         <View className="px-6 pb-6 flex-row justify-between items-center">
-          <View>
-            <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Centro de Comando</Text>
-            <Text className="text-white text-2xl font-black tracking-tighter">Configurações</Text>
+          <View className="flex-row items-center">
+            <Pressable 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.back();
+              }}
+              className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center mr-4"
+            >
+              <ChevronLeft color="#fff" size={20} />
+            </Pressable>
+            <View>
+              <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Centro de Comando</Text>
+              <Text className="text-white text-2xl font-black tracking-tighter">Configurações</Text>
+            </View>
           </View>
           <View className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl items-center justify-center">
             <User color="rgba(255,255,255,0.6)" size={20} />

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus, Download } from 'lucide-react-native';
+import { Plus, Download, Settings } from 'lucide-react-native';
 import ScreenContainer from '@/components/ScreenContainer';
 import TransactionList from '../../src/components/TransactionList';
 import AddTransactionModal from '../../src/components/AddTransactionModal';
+import * as Haptics from 'expo-haptics';
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -15,29 +16,28 @@ export default function TransactionsPage() {
     <ScreenContainer>
       {/* Premium Header */}
       <View className="px-6 pb-6 flex-row justify-between items-center">
-        <View className="flex-row items-center">
-          <Pressable 
-            onPress={() => router.back()}
-            className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center mr-4"
-          >
-            <ChevronLeft color="#fff" size={20} />
-          </Pressable>
-          <View>
-            <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Linha do Tempo</Text>
-            <Text className="text-white text-2xl font-black tracking-tighter">Extrato</Text>
-          </View>
+        <View>
+          <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Linha do Tempo</Text>
+          <Text className="text-white text-2xl font-black tracking-tighter">Extrato</Text>
         </View>
-        <View className="flex-row gap-3">
+        <View className="flex-row items-center gap-3">
           <Pressable 
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/profile');
+            }}
             className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center"
           >
-            <Download color="rgba(255,255,255,0.6)" size={18} />
+            <Settings color="rgba(255,255,255,0.6)" size={18} />
           </Pressable>
           <Pressable 
-            onPress={() => setShowAddModal(true)}
-            className="w-12 h-12 bg-violet-600 rounded-2xl items-center justify-center shadow-lg shadow-violet-600/30"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowAddModal(true);
+            }}
+            className="w-10 h-10 bg-violet-600 rounded-xl items-center justify-center shadow-lg shadow-violet-600/30"
           >
-            <Plus color="#fff" size={24} />
+            <Plus color="#fff" size={20} />
           </Pressable>
         </View>
       </View>

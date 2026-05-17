@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Wallet, Plus, ShieldCheck } from 'lucide-react-native';
+import { Wallet, Plus, ShieldCheck, Settings } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import { LinearGradient } from 'expo-linear-gradient';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '../../utils/format';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 interface UnifiedHeaderProps {
   monthOffset: number;
@@ -36,6 +38,7 @@ export default function UnifiedHeader({
 }: UnifiedHeaderProps) {
   const isFuture = monthOffset > 0;
   const isRecoveryMode = netLiquidityCents < -100;
+  const router = useRouter();
   
   // Lógica do Teto de Sobrevivência (Unificada do HUD da Web)
   const survivalCeilingCents = Math.max(0, monthlyOutlook.balanceAtMonthEnd);
@@ -80,24 +83,37 @@ export default function UnifiedHeader({
               </View>
             </View>
 
-            {!isFuture ? (
-              <Pressable 
-                onPress={onAddTransaction}
-                className="bg-white px-5 py-3 rounded-2xl flex-row items-center gap-2 shadow-xl"
-              >
-                <Plus size={16} color="#000" />
-                <Text className="text-black font-black text-[10px] uppercase tracking-widest">Nova</Text>
-              </Pressable>
-            ) : (
-              isRecoveryMode && onJumpToDebtExit && (
+            <View className="flex-row items-center gap-3">
+              {!isFuture ? (
                 <Pressable 
-                  onPress={onJumpToDebtExit}
-                  className="bg-amber-500/10 border border-amber-500/20 px-4 py-3 rounded-2xl flex-row items-center gap-2"
+                  onPress={onAddTransaction}
+                  className="bg-white px-5 py-3 rounded-2xl flex-row items-center gap-2 shadow-xl"
                 >
-                  <Text className="text-amber-500 font-black text-[9px] uppercase tracking-widest">Ver Saída</Text>
+                  <Plus size={16} color="#000" />
+                  <Text className="text-black font-black text-[10px] uppercase tracking-widest">Nova</Text>
                 </Pressable>
-              )
-            )}
+              ) : (
+                isRecoveryMode && onJumpToDebtExit && (
+                  <Pressable 
+                    onPress={onJumpToDebtExit}
+                    className="bg-amber-500/10 border border-amber-500/20 px-4 py-3 rounded-2xl flex-row items-center gap-2"
+                  >
+                    <Text className="text-amber-500 font-black text-[9px] uppercase tracking-widest">Ver Saída</Text>
+                  </Pressable>
+                )
+              )}
+
+              {/* Botão de Configurações Ultra-Premium */}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/profile');
+                }}
+                className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl items-center justify-center shadow-lg"
+              >
+                <Settings size={18} color="rgba(255,255,255,0.7)" />
+              </Pressable>
+            </View>
           </View>
 
           {/* Main Value: Liquidez ao Fim do Mês */}

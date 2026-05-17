@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, RefreshControl, Pressable, ActivityIndicator } from 'react-native';
 import ScreenContainer from '@/components/ScreenContainer';
-import { Target, Plus } from 'lucide-react-native';
+import { Target, Plus, Settings } from 'lucide-react-native';
 import { useFinancialData } from '../../src/context/FinancialDataContext';
 import GoalCard from '../../src/components/GoalCard';
 import GoalRecommendations from '../../src/components/dashboard/GoalRecommendations';
 import AddGoalModal from '../../src/components/AddGoalModal';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 export default function GoalsScreen() {
   const { goals, loading, refresh } = useFinancialData();
   const [showAddModal, setShowAddModal] = useState(false);
+  const router = useRouter();
 
   if (loading && goals.length === 0) {
     return (
@@ -31,12 +34,26 @@ export default function GoalsScreen() {
             <Text className="text-white font-black text-3xl tracking-tighter">Metas</Text>
             <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px] mt-1">Estratégia & Foco</Text>
           </View>
-          <Pressable 
-            onPress={() => setShowAddModal(true)}
-            className="w-12 h-12 bg-violet-600 rounded-2xl items-center justify-center shadow-lg shadow-violet-600/20"
-          >
-            <Plus size={24} color="#fff" />
-          </Pressable>
+          <View className="flex-row items-center gap-3">
+            <Pressable 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/profile');
+              }}
+              className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center"
+            >
+              <Settings color="rgba(255,255,255,0.6)" size={18} />
+            </Pressable>
+            <Pressable 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowAddModal(true);
+              }}
+              className="w-10 h-10 bg-violet-600 rounded-xl items-center justify-center shadow-lg shadow-violet-600/20"
+            >
+              <Plus size={20} color="#fff" />
+            </Pressable>
+          </View>
         </View>
 
         {/* Recomendações Inteligentes */}
