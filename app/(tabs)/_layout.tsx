@@ -65,22 +65,50 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: 'Início',
-            tabBarIcon: ({ color }) => (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
-                <LayoutDashboard size={22} color={color} />
-              </View>
-            ),
+            tabBarButton: ({ onPress, accessibilityState }) => {
+              const focused = accessibilityState?.selected;
+              return (
+                <Pressable
+                  onPress={onPress}
+                  style={{
+                    flex: 1,
+                    height: 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <LayoutDashboard
+                    size={22}
+                    color={focused ? '#8b5cf6' : 'rgba(255, 255, 255, 0.35)'}
+                  />
+                </Pressable>
+              );
+            }
           }}
         />
         <Tabs.Screen
           name="transactions"
           options={{
             title: 'Extrato',
-            tabBarIcon: ({ color }) => (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
-                <History size={22} color={color} />
-              </View>
-            ),
+            tabBarButton: ({ onPress, accessibilityState }) => {
+              const focused = accessibilityState?.selected;
+              return (
+                <Pressable
+                  onPress={onPress}
+                  style={{
+                    flex: 1,
+                    height: 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <History
+                    size={22}
+                    color={focused ? '#8b5cf6' : 'rgba(255, 255, 255, 0.35)'}
+                  />
+                </Pressable>
+              );
+            }
           }}
         />
         
@@ -121,22 +149,50 @@ export default function TabsLayout() {
           name="goals"
           options={{
             title: 'Metas',
-            tabBarIcon: ({ color }) => (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
-                <Target size={22} color={color} />
-              </View>
-            ),
+            tabBarButton: ({ onPress, accessibilityState }) => {
+              const focused = accessibilityState?.selected;
+              return (
+                <Pressable
+                  onPress={onPress}
+                  style={{
+                    flex: 1,
+                    height: 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Target
+                    size={22}
+                    color={focused ? '#8b5cf6' : 'rgba(255, 255, 255, 0.35)'}
+                  />
+                </Pressable>
+              );
+            }
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Config',
-            tabBarIcon: ({ color }) => (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 64 }}>
-                <Settings size={22} color={color} />
-              </View>
-            ),
+            tabBarButton: ({ onPress, accessibilityState }) => {
+              const focused = accessibilityState?.selected;
+              return (
+                <Pressable
+                  onPress={onPress}
+                  style={{
+                    flex: 1,
+                    height: 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Settings
+                    size={22}
+                    color={focused ? '#8b5cf6' : 'rgba(255, 255, 255, 0.35)'}
+                  />
+                </Pressable>
+              );
+            }
           }}
         />
 
