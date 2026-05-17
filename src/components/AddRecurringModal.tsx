@@ -188,31 +188,79 @@ export default function AddRecurringModal({ onClose, recurring }: AddRecurringMo
           </View>
         </View>
 
-        {/* Account and Category Selectors (simplified for brevity) */}
+        {/* Account Selector */}
+        <View className="mb-6">
+          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-3 px-1">Conta</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {accounts.map((acc) => (
+              <Pressable 
+                key={acc.id}
+                onPress={() => {
+                  setAccountId(acc.id);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={{
+                  width: '48%',
+                  height: 56,
+                  backgroundColor: accountId === acc.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                  borderWidth: 1,
+                  borderColor: accountId === acc.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 12,
+                }}
+              >
+                <Text style={{
+                  color: accountId === acc.id ? '#fff' : 'rgba(255,255,255,0.4)',
+                  fontSize: 10,
+                  fontWeight: '900',
+                  textTransform: 'uppercase',
+                  textAlign: 'center',
+                }} numberOfLines={1}>
+                  {acc.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Category Selector */}
         <View className="mb-8">
-           <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Conta e Categoria</Text>
-           <View className="flex-row gap-2">
-              <View className="flex-1 bg-white/5 border border-white/10 rounded-[24px] p-4 flex-row items-center">
-                 <CreditCard size={14} color="rgba(255,255,255,0.2)" className="mr-2" />
-                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {accounts.map(acc => (
-                       <Pressable key={acc.id} onPress={() => setAccountId(acc.id)} className={`mr-4 ${accountId === acc.id ? 'opacity-100' : 'opacity-30'}`}>
-                          <Text className="text-white text-[10px] font-bold">{acc.name}</Text>
-                       </Pressable>
-                    ))}
-                 </ScrollView>
-              </View>
-              <View className="flex-1 bg-white/5 border border-white/10 rounded-[24px] p-4 flex-row items-center">
-                 <Tag size={14} color="rgba(255,255,255,0.2)" className="mr-2" />
-                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {categories.map(cat => (
-                       <Pressable key={cat.id} onPress={() => setCategoryId(cat.id)} className={`mr-4 ${categoryId === cat.id ? 'opacity-100' : 'opacity-30'}`}>
-                          <Text className="text-white text-[10px] font-bold">{cat.name}</Text>
-                       </Pressable>
-                    ))}
-                 </ScrollView>
-              </View>
-           </View>
+          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-3 px-1">Categoria</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {categories.map((cat) => (
+              <Pressable
+                key={cat.id}
+                onPress={() => {
+                  setCategoryId(cat.id);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={{
+                  width: '31%',
+                  height: 72,
+                  backgroundColor: categoryId === cat.id ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
+                  borderWidth: 1,
+                  borderColor: categoryId === cat.id ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.1)',
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 8,
+                }}
+              >
+                <Text style={{
+                  color: categoryId === cat.id ? '#a78bfa' : 'rgba(255,255,255,0.5)',
+                  fontSize: 10,
+                  fontWeight: '900',
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                  textAlign: 'center',
+                }} numberOfLines={2}>
+                  {cat.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
         <View className="flex-row gap-4 mt-4">

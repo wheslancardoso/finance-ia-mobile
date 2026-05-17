@@ -112,11 +112,15 @@ export default function AccountDetailsModal({ account, onClose, onEdit }: Accoun
                       <Pressable 
                         key={acc.id}
                         onPress={() => setPaymentAccountId(acc.id)}
-                        className={`px-4 py-2 rounded-full mr-2 border ${
-                          paymentAccountId === acc.id ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/5'
+                        className={`px-6 py-3.5 rounded-full mr-3 border ${
+                          paymentAccountId === acc.id 
+                            ? 'bg-white border-white' 
+                            : 'bg-white/5 border-white/10'
                         }`}
                       >
-                        <Text className={`text-xs font-bold ${paymentAccountId === acc.id ? 'text-white' : 'text-white/40'}`}>
+                        <Text className={`text-xs font-black ${
+                          paymentAccountId === acc.id ? 'text-black' : 'text-white/50'
+                        }`}>
                           {acc.name} ({formatCurrency(acc.balance_cents)})
                         </Text>
                       </Pressable>

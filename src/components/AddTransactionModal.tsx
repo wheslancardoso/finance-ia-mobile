@@ -23,6 +23,7 @@ interface AddTransactionModalProps {
 
 export default function AddTransactionModal({ onClose, onSave, transaction }: AddTransactionModalProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const valueInputRef = useRef<any>(null);
   const snapPoints = useMemo(() => ['50%', '95%'], []);
   const { 
     createTransaction, 
@@ -50,6 +51,14 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
     const timer = setTimeout(() => {
       bottomSheetRef.current?.snapToIndex(1);
     }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Foco atrasado em 300ms para evitar travamentos/sobreposição do teclado
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      valueInputRef.current?.focus();
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -202,11 +211,11 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
           <View className="flex-row items-baseline gap-2">
             <Text className="text-white/10 text-2xl font-bold">R$</Text>
             <BottomSheetTextInput
+              ref={valueInputRef}
               className={`text-6xl font-black tracking-tighter tabular-nums ${type === 'INCOME' ? 'text-emerald-400' : 'text-white'}`}
               placeholder="0,00"
               placeholderTextColor="rgba(255,255,255,0.02)"
               keyboardType="decimal-pad"
-              autoFocus
               value={value}
               onChangeText={setValue}
             />
@@ -262,51 +271,79 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
         )}
 
         {/* Account Selectors */}
-        <View className="flex-row gap-4 mb-10">
-          <View className="flex-1">
+        <View className="mb-10">
+          <View className="mb-6">
             <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">
-              {type === 'TRANSFER' ? 'De Onde?' : 'Conta'}
+              {type === 'TRANSFER' ? 'De Onde? (Origem)' : 'Conta'}
             </Text>
-            <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
-              <BottomSheetScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {accounts.map((acc) => (
-                  <Pressable 
-                    key={acc.id}
-                    onPress={() => {
-                      setAccountId(acc.id);
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }}
-                    className={`px-4 py-1.5 rounded-full mr-2 ${accountId === acc.id ? 'bg-white/20' : 'bg-transparent'}`}
-                  >
-                    <Text className={`text-xs font-bold ${accountId === acc.id ? 'text-white' : 'text-white/40'}`}>
-                      {acc.name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </BottomSheetScrollView>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {accounts.map((acc) => (
+                <Pressable 
+                  key={acc.id}
+                  onPress={() => {
+                    setAccountId(acc.id);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    width: '48%',
+                    height: 56,
+                    backgroundColor: accountId === acc.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                    borderWidth: 1,
+                    borderColor: accountId === acc.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: 12,
+                  }}
+                >
+                  <Text style={{
+                    color: accountId === acc.id ? '#fff' : 'rgba(255,255,255,0.4)',
+                    fontSize: 10,
+                    fontWeight: '900',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                  }} numberOfLines={1}>
+                    {acc.name}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
           </View>
 
           {type === 'TRANSFER' && (
-            <View className="flex-1">
-              <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Para Onde?</Text>
-              <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
-                <BottomSheetScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {accounts.filter(a => a.id !== accountId).map((acc) => (
-                    <Pressable 
-                      key={acc.id}
-                      onPress={() => {
-                        setTargetAccountId(acc.id);
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      }}
-                      className={`px-4 py-1.5 rounded-full mr-2 ${targetAccountId === acc.id ? 'bg-white/20' : 'bg-transparent'}`}
-                    >
-                      <Text className={`text-xs font-bold ${targetAccountId === acc.id ? 'text-white' : 'text-white/40'}`}>
-                        {acc.name}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </BottomSheetScrollView>
+            <View className="mb-6">
+              <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Para Onde? (Destino)</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {accounts.filter(a => a.id !== accountId).map((acc) => (
+                  <Pressable 
+                    key={acc.id}
+                    onPress={() => {
+                      setTargetAccountId(acc.id);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    style={{
+                      width: '48%',
+                      height: 56,
+                      backgroundColor: targetAccountId === acc.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                      borderWidth: 1,
+                      borderColor: targetAccountId === acc.id ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)',
+                      borderRadius: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingHorizontal: 12,
+                    }}
+                  >
+                    <Text style={{
+                      color: targetAccountId === acc.id ? '#fff' : 'rgba(255,255,255,0.4)',
+                      fontSize: 10,
+                      fontWeight: '900',
+                      textTransform: 'uppercase',
+                      textAlign: 'center',
+                    }} numberOfLines={1}>
+                      {acc.name}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
             </View>
           )}
@@ -314,26 +351,40 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
 
         {/* Category Selection (Only if not transfer) */}
         {type !== 'TRANSFER' && (
-          <View className="mb-6">
-            <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Categoria</Text>
-            <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
-              <Tag size={18} color="rgba(255,255,255,0.2)" className="mr-3" />
-              <BottomSheetScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {categories.map((cat) => (
-                  <Pressable 
-                    key={cat.id}
-                    onPress={() => {
-                      setCategoryId(cat.id);
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }}
-                    className={`px-4 py-1.5 rounded-full mr-2 ${categoryId === cat.id ? 'bg-white/20' : 'bg-transparent'}`}
-                  >
-                    <Text className={`text-xs font-bold ${categoryId === cat.id ? 'text-white' : 'text-white/40'}`}>
-                      {cat.name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </BottomSheetScrollView>
+          <View className="mb-8">
+            <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-3 px-1">Categoria</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {categories.map((cat) => (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => {
+                    setCategoryId(cat.id);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    width: '31%',
+                    height: 72,
+                    backgroundColor: categoryId === cat.id ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
+                    borderWidth: 1,
+                    borderColor: categoryId === cat.id ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.1)',
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 8,
+                  }}
+                >
+                  <Text style={{
+                    color: categoryId === cat.id ? '#a78bfa' : 'rgba(255,255,255,0.5)',
+                    fontSize: 10,
+                    fontWeight: '900',
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                    textAlign: 'center',
+                  }} numberOfLines={2}>
+                    {cat.name}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
           </View>
         )}

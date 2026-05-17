@@ -102,25 +102,39 @@ export default function AddBudgetModal({ onClose, budget }: AddBudgetModalProps)
 
         {/* Category Selection */}
         <View className="mb-8">
-          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Categoria</Text>
-          <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
-            <Tag size={18} color="rgba(255,255,255,0.2)" className="mr-3" />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {categories.map((cat) => (
-                <Pressable 
-                  key={cat.id}
-                  onPress={() => {
-                    setCategoryId(cat.id);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }}
-                  className={`px-4 py-1.5 rounded-full mr-2 ${categoryId === cat.id ? 'bg-white/20' : 'bg-transparent'}`}
-                >
-                  <Text className={`text-xs font-bold ${categoryId === cat.id ? 'text-white' : 'text-white/40'}`}>
-                    {cat.name}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-3 px-1">Categoria</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {categories.map((cat) => (
+              <Pressable
+                key={cat.id}
+                onPress={() => {
+                  setCategoryId(cat.id);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={{
+                  width: '31%',
+                  height: 72,
+                  backgroundColor: categoryId === cat.id ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
+                  borderWidth: 1,
+                  borderColor: categoryId === cat.id ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.1)',
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 8,
+                }}
+              >
+                <Text style={{
+                  color: categoryId === cat.id ? '#a78bfa' : 'rgba(255,255,255,0.5)',
+                  fontSize: 10,
+                  fontWeight: '900',
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                  textAlign: 'center',
+                }} numberOfLines={2}>
+                  {cat.name}
+                </Text>
+              </Pressable>
+            ))}
           </View>
         </View>
 
