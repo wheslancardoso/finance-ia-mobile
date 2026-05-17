@@ -134,24 +134,22 @@ export default function TransactionList({ limit = 20, onEdit }: TransactionListP
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
-        className="mb-4"
-        style={{ maxHeight: 60, minHeight: 60 }}
+        className="mb-4 h-12"
         contentContainerStyle={{ 
-          paddingVertical: 8, 
           paddingRight: 24,
           alignItems: 'center' 
         }}
       >
         <Pressable
           onPress={() => setSelectedAccountId(null)}
-          className={`px-6 py-3 rounded-2xl border flex-row items-center mr-3 shadow-sm ${
+          className={`px-5 py-2.5 rounded-[16px] border flex-row items-center mr-2.5 shadow-sm ${
             !selectedAccountId 
               ? 'bg-violet-600 border-violet-500 shadow-violet-600/20' 
               : 'bg-white/5 border-white/10'
           }`}
         >
-          <LayoutGrid size={14} color={!selectedAccountId ? '#fff' : 'rgba(255,255,255,0.5)'} />
-          <Text className={`ml-2 text-[10px] font-black uppercase tracking-[1.5px] ${
+          <LayoutGrid size={13} color={!selectedAccountId ? '#fff' : 'rgba(255,255,255,0.5)'} />
+          <Text className={`ml-2 text-[10px] font-black uppercase tracking-[1px] ${
             !selectedAccountId ? 'text-white' : 'text-white/50'
           }`}>Tudo</Text>
         </Pressable>
@@ -159,13 +157,13 @@ export default function TransactionList({ limit = 20, onEdit }: TransactionListP
           <Pressable
             key={acc.id}
             onPress={() => setSelectedAccountId(acc.id)}
-            className={`px-6 py-3 rounded-2xl border mr-3 shadow-sm ${
+            className={`px-5 py-2.5 rounded-[16px] border mr-2.5 shadow-sm ${
               selectedAccountId === acc.id 
                 ? 'bg-white/15 border-white/30 shadow-white/5' 
                 : 'bg-white/5 border-white/10'
             }`}
           >
-            <Text className={`text-[10px] font-black uppercase tracking-[1.5px] ${
+            <Text className={`text-[10px] font-black uppercase tracking-[1px] ${
               selectedAccountId === acc.id ? 'text-white' : 'text-white/50'
             }`}>{acc.name}</Text>
           </Pressable>

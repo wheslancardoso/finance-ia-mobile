@@ -286,22 +286,32 @@ export function FinancialDataProvider({ children }: { children: React.ReactNode 
 
   // Monitorar estado de autenticação
   useEffect(() => {
+    let active = true;
+
     const getInitialUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUserId(session?.user?.id || null);
+      if (!active) return;
+      const currentUid = session?.user?.id || null;
+      setUserId(currentUid);
+      if (currentUid) {
+        await refreshData();
+      } else {
+        setLoading(false);
+      }
     };
     getInitialUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
-      setUserId(session?.user?.id || null);
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        refreshData();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+      if (!active) return;
+      const currentUid = session?.user?.id || null;
+      setUserId(currentUid);
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
+        await refreshData();
       }
     });
     
-    refreshData();
-    
     return () => {
+      active = false;
       subscription.unsubscribe();
     };
   }, [refreshData]);
