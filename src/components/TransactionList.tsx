@@ -134,8 +134,13 @@ export default function TransactionList({ limit = 20, onEdit }: TransactionListP
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
-        className="mb-6"
-        contentContainerStyle={{ paddingVertical: 6, paddingRight: 24 }}
+        className="mb-4"
+        style={{ maxHeight: 60, minHeight: 60 }}
+        contentContainerStyle={{ 
+          paddingVertical: 8, 
+          paddingRight: 24,
+          alignItems: 'center' 
+        }}
       >
         <Pressable
           onPress={() => setSelectedAccountId(null)}
