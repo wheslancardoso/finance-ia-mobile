@@ -144,6 +144,8 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: '#0a0a0a' }}
       handleIndicatorStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
     >
       <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
         <View className="flex-row justify-between items-center mb-10">
