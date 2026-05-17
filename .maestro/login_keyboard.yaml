@@ -1,0 +1,32 @@
+appId: com.vesper.finance
+---
+# Fluxo: Verificação de responsividade do teclado na tela de login
+- launchApp:
+    clearState: true
+
+# Verifica a tela de login
+- assertVisible: "Vesper"
+
+# Toca no campo de e-mail — deve abrir o teclado
+- tapOn: "email@exemplo.com"
+
+# Verifica que o campo de senha CONTINUA visível mesmo com o teclado aberto
+- assertVisible: "Sua Senha"
+
+# Digita o e-mail
+- inputText: "usuario@teste.com"
+
+# Move para o campo de senha (next do teclado)
+- pressKey: "Enter"
+
+# Verifica que o campo de senha está focado e o botão de login visível
+- assertVisible: "Entrar no Vesper"
+
+# Digita a senha
+- inputText: "MinhaSenha123"
+
+# Verifica que o botão de login continua acessível
+- assertVisible: "Entrar no Vesper"
+
+# Minimiza o teclado
+- hideKeyboard

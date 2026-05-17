@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, RefreshControl, Pressable, ActivityIndicator } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { Target, Plus } from 'lucide-react-native';
 import { useFinancialData } from '../../src/context/FinancialDataContext';
 import GoalCard from '../../src/components/GoalCard';
@@ -19,9 +20,9 @@ export default function GoalsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#050505]">
+    <ScreenContainer>
       <ScrollView 
-        className="flex-1 px-4 pt-12"
+        className="flex-1 px-4"
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#fff" />}
         showsVerticalScrollIndicator={false}
       >
@@ -94,6 +95,6 @@ export default function GoalsScreen() {
           }}
         />
       )}
-    </View>
+    </ScreenContainer>
   );
 }

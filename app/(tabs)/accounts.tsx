@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, SafeAreaView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Plus } from 'lucide-react-native';
 import { MotiView } from 'moti';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useAccounts, Account } from '../../src/hooks/useAccounts';
 import AccountCard from '../../src/components/AccountCard';
 import AccountDetailsModal from '../../src/components/AccountDetailsModal';
@@ -26,16 +27,16 @@ export default function AccountsPage() {
 
   if (loading && accounts.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
+      <View className="flex-1 bg-[#050505] justify-center items-center">
         <ActivityIndicator color="#10b981" size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
+    <ScreenContainer>
       {/* Premium Header */}
-      <View className="px-6 py-8 flex-row justify-between items-center">
+      <View className="px-6 pb-6 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Pressable 
             onPress={() => router.back()}
@@ -95,7 +96,7 @@ export default function AccountsPage() {
             <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px]">Liquidez Imediata</Text>
             <View className="h-[1px] flex-1 bg-white/5 ml-4" />
           </View>
-          {accounts.filter(a => a.type !== 'CREDIT_CARD').map((account, index) => (
+          {accounts.filter(a => a.type !== 'CREDIT_CARD').map((account) => (
             <AccountCard 
               key={account.id} 
               account={account} 
@@ -111,7 +112,7 @@ export default function AccountsPage() {
             <Text className="text-white/40 text-[10px] font-black uppercase tracking-[3px]">Crédito e Passivos</Text>
             <View className="h-[1px] flex-1 bg-white/5 ml-4" />
           </View>
-          {accounts.filter(a => a.type === 'CREDIT_CARD').map((account, index) => (
+          {accounts.filter(a => a.type === 'CREDIT_CARD').map((account) => (
             <AccountCard 
               key={account.id} 
               account={account} 
@@ -142,6 +143,6 @@ export default function AccountsPage() {
           }} 
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus, Filter, Download } from 'lucide-react-native';
+import { ChevronLeft, Plus, Download } from 'lucide-react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import TransactionList from '../../src/components/TransactionList';
 import AddTransactionModal from '../../src/components/AddTransactionModal';
 
@@ -11,9 +12,9 @@ export default function TransactionsPage() {
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
+    <ScreenContainer>
       {/* Premium Header */}
-      <View className="px-6 py-8 flex-row justify-between items-center">
+      <View className="px-6 pb-6 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Pressable 
             onPress={() => router.back()}
@@ -60,6 +61,6 @@ export default function TransactionsPage() {
           }}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

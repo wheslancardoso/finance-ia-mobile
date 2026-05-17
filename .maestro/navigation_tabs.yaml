@@ -1,0 +1,30 @@
+appId: com.vesper.finance
+---
+# Fluxo: Navegação entre abas e verificação de layout dos headers
+- launchApp
+
+# Dashboard — verifica que o cabeçalho está visível e não cortado
+- assertVisible:
+    text: "Saldo Total"
+    optional: true
+
+# Navega para aba de Extrato
+- tapOn:
+    index: 1
+
+# Verifica que o header do Extrato está visível
+- assertVisible: "Extrato"
+
+# Navega para aba de Patrimônio
+- tapOn:
+    index: 3
+
+# Verifica que o header do Patrimônio está visível
+- assertVisible: "Patrimônio"
+
+# Navega para aba de Metas
+- tapOn:
+    index: 4
+
+# Verifica que o header das Metas está visível
+- assertVisible: "Metas"

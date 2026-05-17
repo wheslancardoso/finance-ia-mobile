@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, SafeAreaView, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Sparkles, TrendingDown, Calendar, Wallet, ArrowRight } from 'lucide-react-native';
 import { useFinancialAnalysis } from '../src/hooks/useFinancialAnalysis';
@@ -27,16 +28,16 @@ export default function SimulatorScreen() {
 
   if (loading || !analysis) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
+      <View className="flex-1 bg-[#050505] items-center justify-center">
         <ActivityIndicator color="#8b5cf6" size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <ScreenContainer>
       {/* Header */}
-      <View className="px-6 py-8 flex-row items-center">
+      <View className="px-6 pb-6 flex-row items-center">
         <Pressable 
           onPress={() => router.back()}
           className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center mr-4"
@@ -185,6 +186,6 @@ export default function SimulatorScreen() {
 
         <View className="h-20" />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

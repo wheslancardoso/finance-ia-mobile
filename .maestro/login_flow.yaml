@@ -1,0 +1,30 @@
+appId: com.vesper.finance
+---
+# Fluxo: Login com credenciais válidas
+- launchApp:
+    clearState: true
+
+# Verifica que a tela de login está visível
+- assertVisible: "Vesper"
+- assertVisible: "Seu E-mail"
+- assertVisible: "Sua Senha"
+
+# Preenche o campo de e-mail
+- tapOn: "email@exemplo.com"
+- inputText: "test@vesper.finance"
+
+# Preenche o campo de senha
+- tapOn: "••••••••"
+- inputText: "TestSenha123"
+
+# Verifica o botão de mostrar/ocultar senha
+- tapOn:
+    id: "toggle-password"
+
+# Clica no botão de login
+- tapOn: "Entrar no Vesper"
+
+# Espera a navegação acontecer
+- assertVisible:
+    text: "Saldo Total"
+    optional: true

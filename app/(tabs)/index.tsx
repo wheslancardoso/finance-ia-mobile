@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, RefreshControl, Pressable } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useRouter } from 'expo-router';
 import { 
   Calculator, 
@@ -136,9 +137,9 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <View className="flex-1 bg-[#050505]">
+    <ScreenContainer>
       <ScrollView 
-        className="flex-1 px-4 pt-4"
+        className="flex-1 px-4"
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#fff" />}
         showsVerticalScrollIndicator={false}
       >
@@ -253,6 +254,6 @@ export default function Dashboard() {
           }}
         />
       )}
-    </View>
+    </ScreenContainer>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { View, Text, SafeAreaView, ScrollView, Pressable, ActivityIndicator, TextInput, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, TextInput, StyleSheet } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Plus, Tag, X, Trash2 } from 'lucide-react-native';
 import { useCategories, Category } from '../../src/hooks/useCategories';
@@ -14,16 +15,16 @@ export default function CategoriesPage() {
 
   if (loading && categories.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
+      <View className="flex-1 bg-[#050505] items-center justify-center">
         <ActivityIndicator color="#8b5cf6" size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <ScreenContainer>
       {/* Header */}
-      <View className="px-6 py-4 flex-row justify-between items-center border-b border-white/5">
+      <View className="px-6 pb-4 flex-row justify-between items-center border-b border-white/5">
         <Pressable 
           onPress={() => router.back()}
           className="p-2 -ml-2"
@@ -92,7 +93,7 @@ export default function CategoriesPage() {
           }}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

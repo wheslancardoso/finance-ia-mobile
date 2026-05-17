@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, User, DollarSign, Wallet, LogOut, ShieldCheck, ChevronRight, MessageSquare, Phone, Zap, Palette, Target, PieChart } from 'lucide-react-native';
 import { useProfile } from '../../src/hooks/useProfile';
@@ -46,31 +47,23 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
+      <View className="flex-1 bg-[#050505] items-center justify-center">
         <ActivityIndicator color="#8b5cf6" size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
+    <ScreenContainer>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         {/* Premium Header */}
-        <View className="px-6 py-8 flex-row justify-between items-center">
-          <View className="flex-row items-center">
-            <Pressable 
-              onPress={() => router.back()}
-              className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl items-center justify-center mr-4"
-            >
-              <ChevronLeft color="#fff" size={20} />
-            </Pressable>
-            <View>
-              <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Centro de Comando</Text>
-              <Text className="text-white text-2xl font-black tracking-tighter">Configurações</Text>
-            </View>
+        <View className="px-6 pb-6 flex-row justify-between items-center">
+          <View>
+            <Text className="text-violet-500 text-[10px] font-black uppercase tracking-[3px] mb-1">Centro de Comando</Text>
+            <Text className="text-white text-2xl font-black tracking-tighter">Configurações</Text>
           </View>
           <View className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl items-center justify-center">
             <User color="rgba(255,255,255,0.6)" size={20} />
@@ -273,6 +266,6 @@ export default function ProfileScreen() {
           <View className="h-20" />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

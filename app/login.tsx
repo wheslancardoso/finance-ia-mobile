@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Mail, Lock, ArrowRight, Sparkles, Eye, EyeOff, Globe, ShieldCheck } from 'lucide-react-native';
-import { MotiView, AnimatePresence } from 'moti';
+import { MotiView } from 'moti';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { supabase } from '@/lib/supabase';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -18,6 +18,12 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const passwordRef = useRef<TextInput>(null);
+
+  // Fallback robusto para Expo Go no Android
+  const statusBarFallback = Platform.OS === 'android' ? (Constants.statusBarHeight ?? 24) : 0;
+  const topInset = Math.max(insets.top, statusBarFallback);
 
   async function handleAuth() {
     if (!email || !password) return;
@@ -51,8 +57,13 @@ export default function LoginScreen() {
     }
   }
 
+  function handleTogglePassword() {
+    setShowPassword(prev => !prev);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <View style={{ flex: 1, backgroundColor: '#050505' }}>
       {/* Premium Background Effects */}
       <View className="absolute inset-0 overflow-hidden">
         <MotiView
@@ -70,20 +81,27 @@ export default function LoginScreen() {
       </View>
 
       <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
         className="flex-1"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView 
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ 
+            flexGrow: 1, 
+            paddingTop: topInset + 16,
+            paddingBottom: insets.bottom + 24,
+          }}
           className="px-8"
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
         >
-          <View className="flex-1 justify-center py-12">
+          <View className="flex-1 justify-center py-6">
             {/* Logo Section */}
             <MotiView 
               from={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="items-center mb-16"
+              className="items-center mb-12"
             >
               <View className="w-24 h-24 bg-white/5 rounded-[32px] border border-white/10 items-center justify-center mb-8 shadow-2xl">
                 <LinearGradient
@@ -97,8 +115,8 @@ export default function LoginScreen() {
                 Ves<Text className="text-violet-500">per</Text>
               </Text>
               <View className="flex-row items-center bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
-                <ShieldCheck size={12} color="rgba(255,255,255,0.4)" className="mr-2" />
-                <Text className="text-white/40 text-[9px] font-black uppercase tracking-[3px]">
+                <ShieldCheck size={12} color="rgba(255,255,255,0.4)" />
+                <Text className="text-white/40 text-[9px] font-black uppercase tracking-[3px] ml-2">
                   Engine Financeira Avançada
                 </Text>
               </View>
@@ -118,64 +136,85 @@ export default function LoginScreen() {
 
               {error && (
                 <MotiView 
-                  from={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  from={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   className="bg-red-500/10 border border-red-500/20 p-5 rounded-3xl mb-8"
                 >
                   <Text className="text-red-400 text-xs font-bold text-center">{error}</Text>
                 </MotiView>
               )}
 
-              <View className="space-y-6">
-                <View>
-                  <Text className="text-white/20 text-[9px] font-black uppercase tracking-[3px] mb-3 px-1">Seu E-mail</Text>
-                  <View className="relative">
-                    <View className="absolute left-5 top-5 z-10">
-                      <Mail size={18} color="rgba(255,255,255,0.2)" />
-                    </View>
-                    <TextInput
-                      placeholder="email@exemplo.com"
-                      placeholderTextColor="rgba(255,255,255,0.1)"
-                      value={email}
-                      onChangeText={setEmail}
-                      autoCapitalize="none"
-                      keyboardType="email-address"
-                      className="bg-white/5 border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-white font-bold text-base"
-                    />
+              {/* Campo E-mail */}
+              <View className="mb-6">
+                <Text className="text-white/20 text-[9px] font-black uppercase tracking-[3px] mb-3 px-1">Seu E-mail</Text>
+                <View className="relative">
+                  <View className="absolute left-5 top-0 bottom-0 justify-center z-10" pointerEvents="none">
+                    <Mail size={18} color="rgba(255,255,255,0.2)" />
                   </View>
+                  <TextInput
+                    placeholder="email@exemplo.com"
+                    placeholderTextColor="rgba(255,255,255,0.1)"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    returnKeyType="next"
+                    onSubmitEditing={() => passwordRef.current?.focus()}
+                    blurOnSubmit={false}
+                    className="bg-white/5 border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-white font-bold text-base"
+                    style={{ color: '#fff', fontSize: 16 }}
+                  />
                 </View>
+              </View>
 
-                <View>
-                  <Text className="text-white/20 text-[9px] font-black uppercase tracking-[3px] mb-3 px-1">Sua Senha</Text>
-                  <View className="relative">
-                    <View className="absolute left-5 top-5 z-10">
-                      <Lock size={18} color="rgba(255,255,255,0.2)" />
-                    </View>
-                    <TextInput
-                      placeholder="••••••••"
-                      placeholderTextColor="rgba(255,255,255,0.1)"
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                      className="bg-white/5 border border-white/5 rounded-2xl py-5 pl-14 pr-14 text-white font-bold text-base"
-                    />
-                    <Pressable 
-                      onPress={() => {
-                        setShowPassword(!showPassword);
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      }}
-                      className="absolute right-5 top-5"
-                    >
-                      {showPassword ? <EyeOff size={18} color="rgba(255,255,255,0.2)" /> : <Eye size={18} color="rgba(255,255,255,0.2)" />}
-                    </Pressable>
+              {/* Campo Senha */}
+              <View className="mb-6">
+                <Text className="text-white/20 text-[9px] font-black uppercase tracking-[3px] mb-3 px-1">Sua Senha</Text>
+                <View className="relative">
+                  <View className="absolute left-5 top-0 bottom-0 justify-center z-10" pointerEvents="none">
+                    <Lock size={18} color="rgba(255,255,255,0.2)" />
                   </View>
+                  <TextInput
+                    ref={passwordRef}
+                    placeholder="••••••••"
+                    placeholderTextColor="rgba(255,255,255,0.1)"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoComplete="password"
+                    returnKeyType="go"
+                    onSubmitEditing={handleAuth}
+                    className="bg-white/5 border border-white/5 rounded-2xl py-5 pl-14 pr-16 text-white font-bold text-base"
+                    style={{ color: '#fff', fontSize: 16 }}
+                  />
+                  <TouchableOpacity 
+                    onPress={handleTogglePassword}
+                    activeOpacity={0.6}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    style={{ 
+                      position: 'absolute', 
+                      right: 16, 
+                      top: 0, 
+                      bottom: 0, 
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: 44,
+                      zIndex: 20,
+                    }}
+                  >
+                    {showPassword 
+                      ? <EyeOff size={20} color="rgba(255,255,255,0.4)" /> 
+                      : <Eye size={20} color="rgba(255,255,255,0.4)" />
+                    }
+                  </TouchableOpacity>
                 </View>
               </View>
 
               <Pressable 
                 onPress={handleAuth}
-                disabled={loading}
-                className={`mt-10 py-6 rounded-[32px] overflow-hidden shadow-2xl ${loading ? 'opacity-50' : ''}`}
+                disabled={loading || !email || !password}
+                className={`mt-4 py-6 rounded-[32px] overflow-hidden shadow-2xl ${loading || !email || !password ? 'opacity-50' : ''}`}
               >
                 <LinearGradient
                   colors={['#8b5cf6', '#6d28d9']}
@@ -224,6 +263,6 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

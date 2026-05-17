@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, SafeAreaView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { TrendingUp, PieChart as PieIcon, Activity } from 'lucide-react-native';
 import { useFinancialData } from '../../src/context/FinancialDataContext';
 
@@ -38,9 +39,9 @@ export default function AnalyticsScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]" style={{ backgroundColor: '#050505' }}>
+    <ScreenContainer>
       <ScrollView 
-        className="flex-1 px-6 pt-8"
+        className="flex-1 px-6"
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor="#fff" />}
         showsVerticalScrollIndicator={false}
       >
@@ -69,6 +70,6 @@ export default function AnalyticsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

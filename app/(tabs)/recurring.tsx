@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, SafeAreaView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Repeat, Play, Pause, CreditCard, Wallet, Plus } from 'lucide-react-native';
 import { useRecurring, RecurringTransaction } from '../../src/hooks/useRecurring';
@@ -19,16 +20,16 @@ export default function RecurringScreen() {
 
   if (loading && recurring.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
+      <View className="flex-1 bg-[#050505] items-center justify-center">
         <ActivityIndicator color="#8b5cf6" size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <ScreenContainer>
       {/* Premium Header */}
-      <View className="px-6 py-8 flex-row justify-between items-center">
+      <View className="px-6 pb-6 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Pressable 
             onPress={() => router.back()}
@@ -112,7 +113,7 @@ export default function RecurringScreen() {
           }}
         />
       )}
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 

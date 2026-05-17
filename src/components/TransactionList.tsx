@@ -131,28 +131,37 @@ export default function TransactionList({ limit = 20, onEdit }: TransactionListP
       </View>
 
       {/* Account Filters */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mb-6">
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        className="mb-6"
+        contentContainerStyle={{ paddingVertical: 6, paddingRight: 24 }}
+      >
         <Pressable
           onPress={() => setSelectedAccountId(null)}
-          className={`px-5 py-2 rounded-xl border flex-row items-center mr-2 ${
-            !selectedAccountId ? 'bg-violet-600 border-violet-500' : 'bg-white/5 border-white/10'
+          className={`px-6 py-3 rounded-2xl border flex-row items-center mr-3 shadow-sm ${
+            !selectedAccountId 
+              ? 'bg-violet-600 border-violet-500 shadow-violet-600/20' 
+              : 'bg-white/5 border-white/10'
           }`}
         >
-          <LayoutGrid size={12} color={!selectedAccountId ? '#fff' : 'rgba(255,255,255,0.4)'} />
-          <Text className={`ml-2 text-[10px] font-black uppercase tracking-widest ${
-            !selectedAccountId ? 'text-white' : 'text-white/40'
+          <LayoutGrid size={14} color={!selectedAccountId ? '#fff' : 'rgba(255,255,255,0.5)'} />
+          <Text className={`ml-2 text-[10px] font-black uppercase tracking-[1.5px] ${
+            !selectedAccountId ? 'text-white' : 'text-white/50'
           }`}>Tudo</Text>
         </Pressable>
         {accounts.map((acc) => (
           <Pressable
             key={acc.id}
             onPress={() => setSelectedAccountId(acc.id)}
-            className={`px-5 py-2 rounded-xl border mr-2 ${
-              selectedAccountId === acc.id ? 'bg-white/10 border-white/30' : 'bg-white/5 border-white/10'
+            className={`px-6 py-3 rounded-2xl border mr-3 shadow-sm ${
+              selectedAccountId === acc.id 
+                ? 'bg-white/15 border-white/30 shadow-white/5' 
+                : 'bg-white/5 border-white/10'
             }`}
           >
-            <Text className={`text-[10px] font-black uppercase tracking-widest ${
-              selectedAccountId === acc.id ? 'text-white' : 'text-white/40'
+            <Text className={`text-[10px] font-black uppercase tracking-[1.5px] ${
+              selectedAccountId === acc.id ? 'text-white' : 'text-white/50'
             }`}>{acc.name}</Text>
           </Pressable>
         ))}
@@ -173,22 +182,20 @@ export default function TransactionList({ limit = 20, onEdit }: TransactionListP
           <Text className="text-white/20 font-medium">Nenhuma transação encontrada</Text>
         </View>
       ) : (
-        <View>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
           {filteredTransactions.map((tx) => (
             <TransactionItem
               key={tx.id}
-              description={tx.description}
-              amount={tx.amount_cents}
-              date={format(new Date(tx.date), 'dd/MM/yy', { locale: ptBR })}
-              category={tx.categories?.name || 'Sem Categoria'}
-              account={tx.accounts?.name || 'Conta Geral'}
-              isPaid={tx.is_paid}
+              transaction={{
+                ...tx,
+                category: tx.categories,
+                account: tx.accounts
+              }}
               onTogglePaid={() => togglePaid(tx.id, tx.is_paid)}
-              onDelete={() => handleDelete(tx.id)}
               onPress={() => onEdit?.(tx)}
             />
           ))}
-        </View>
+        </ScrollView>
       )}
     </View>
   );

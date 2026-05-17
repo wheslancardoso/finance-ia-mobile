@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, SafeAreaView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import ScreenContainer from '@/components/ScreenContainer';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, TrendingUp, Activity, PieChart, ShieldCheck, AlertCircle } from 'lucide-react-native';
 import { useFinancialAnalysis } from '../../src/hooks/useFinancialAnalysis';
@@ -13,18 +14,18 @@ export default function ReportsScreen() {
 
   if (loading || !analysis) {
     return (
-      <SafeAreaView className="flex-1 bg-[#050505] items-center justify-center">
+      <View className="flex-1 bg-[#050505] items-center justify-center">
         <ActivityIndicator color="#8b5cf6" size="large" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   const { healthScore, netWorthHistory, incomeMix } = analysis;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050505]">
+    <ScreenContainer>
       {/* Premium Header */}
-      <View className="px-6 py-8 flex-row justify-between items-center">
+      <View className="px-6 pb-6 flex-row justify-between items-center">
         <View className="flex-row items-center">
           <Pressable 
             onPress={() => router.back()}
@@ -148,7 +149,7 @@ export default function ReportsScreen() {
 
         <View className="h-10" />
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
