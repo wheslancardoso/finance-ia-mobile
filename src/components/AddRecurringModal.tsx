@@ -225,43 +225,7 @@ export default function AddRecurringModal({ onClose, recurring }: AddRecurringMo
           </View>
         </View>
 
-        {/* Category Selector */}
-        <View className="mb-8">
-          <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-3 px-1">Categoria</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {categories.map((cat) => (
-              <Pressable
-                key={cat.id}
-                onPress={() => {
-                  setCategoryId(cat.id);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                style={{
-                  width: '31%',
-                  height: 72,
-                  backgroundColor: categoryId === cat.id ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
-                  borderWidth: 1,
-                  borderColor: categoryId === cat.id ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.1)',
-                  borderRadius: 16,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 8,
-                }}
-              >
-                <Text style={{
-                  color: categoryId === cat.id ? '#a78bfa' : 'rgba(255,255,255,0.5)',
-                  fontSize: 10,
-                  fontWeight: '900',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  textAlign: 'center',
-                }} numberOfLines={2}>
-                  {cat.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+
 
         <View className="flex-row gap-4 mt-4">
           {recurring && (
