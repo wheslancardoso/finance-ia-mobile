@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { Plus, Settings } from 'lucide-react-native';
 import { MotiView } from 'moti';
 import ScreenContainer from '@/components/ScreenContainer';
-import { useAccounts, Account } from '../../src/hooks/useAccounts';
+import { useFinancialData } from '../../src/context/FinancialDataContext';
+import { Account } from '../../src/domain/types';
 import AccountCard from '../../src/components/AccountCard';
 import AccountDetailsModal from '../../src/components/AccountDetailsModal';
 import AddAccountModal from '../../src/components/AddAccountModal';
@@ -13,10 +14,14 @@ import * as Haptics from 'expo-haptics';
 
 export default function AccountsPage() {
   const router = useRouter();
-  const { accounts, loading, refresh } = useAccounts();
+  const { accounts, loading, refreshData } = useFinancialData();
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+
+  const refresh = React.useCallback(async () => {
+    await refreshData();
+  }, [refreshData]);
 
   const totalBalanceCents = accounts.reduce((acc, curr) => 
     curr.type !== 'CREDIT_CARD' ? acc + curr.balance_cents : acc, 0

@@ -18,7 +18,7 @@ describe('AccountCard', () => {
 
   it('deve renderizar as informações da conta corretamente', () => {
     const { getByText, getAllByText } = render(
-      <AccountCard account={mockAccount as any} index={0} />
+      <AccountCard account={mockAccount as any} />
     );
     
     expect(getByText('Nubank')).toBeTruthy();
@@ -28,7 +28,7 @@ describe('AccountCard', () => {
 
   it('deve mostrar o limite disponível para cartões de crédito', () => {
     const { getByText } = render(
-      <AccountCard account={mockAccount as any} index={0} />
+      <AccountCard account={mockAccount as any} />
     );
     
     // Limite 2000 - Gasto 500 = 1500 disponível
@@ -39,7 +39,7 @@ describe('AccountCard', () => {
   it('deve chamar onPress quando pressionado', () => {
     const onPressMock = jest.fn();
     const { getByText } = render(
-      <AccountCard account={mockAccount as any} index={0} onPress={onPressMock} />
+      <AccountCard account={mockAccount as any} onPress={onPressMock} />
     );
     
     fireEvent.press(getByText('Nubank'));

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { X, CreditCard, Landmark, Wallet, PiggyBank, Briefcase } from 'lucide-react-native';
-import { useAccounts } from '../hooks/useAccounts';
+import { useFinancialData } from '../context/FinancialDataContext';
 import * as Haptics from 'expo-haptics';
 
 interface AddAccountModalProps {
@@ -13,7 +13,7 @@ interface AddAccountModalProps {
 export default function AddAccountModal({ onClose, account }: AddAccountModalProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['50%', '90%'], []);
-  const { createAccount, updateAccount, deleteAccount } = useAccounts();
+  const { upsertAccount, deleteAccount } = useFinancialData();
 
   const [name, setName] = useState(account?.name || '');
   const [type, setType] = useState<any>(account?.type || 'CHECKING');
@@ -46,11 +46,10 @@ export default function AddAccountModal({ onClose, account }: AddAccountModalPro
         color: '#8b5cf6', // Default color
       };
 
-      if (account?.id) {
-        await updateAccount(account.id, accountData);
-      } else {
-        await createAccount(accountData);
-      }
+      await upsertAccount({
+        ...(account?.id ? { id: account.id } : {}),
+        ...accountData
+      });
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       bottomSheetRef.current?.close();

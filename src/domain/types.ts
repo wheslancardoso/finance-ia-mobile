@@ -11,6 +11,7 @@ export interface Account {
   name: string;
   type: string;
   balance_cents: number;
+  limit_cents?: number | null;
   credit_limit_cents?: number;
   current_invoice_cents?: number;
   ceiling_impact_cents?: number;

@@ -39,13 +39,13 @@ describe('GoalCard', () => {
     expect(getByText('Pronto para Compra')).toBeTruthy();
   });
 
-  it('deve chamar onContribute quando o botão aportar for pressionado', () => {
-    const onContributeMock = jest.fn();
+  it('deve chamar onContribution quando o botão aportar for pressionado', () => {
+    const onContributionMock = jest.fn();
     const { getByText } = render(
-      <GoalCard goal={mockGoal as any} onContribute={onContributeMock} />
+      <GoalCard goal={mockGoal as any} onContribution={onContributionMock} />
     );
     
     fireEvent.press(getByText('Aportar'));
-    expect(onContributeMock).toHaveBeenCalled();
+    expect(onContributionMock).toHaveBeenCalled();
   });
 });

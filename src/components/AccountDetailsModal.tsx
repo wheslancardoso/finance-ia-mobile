@@ -3,7 +3,8 @@ import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator } from
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { X, CreditCard, ArrowUpRight, ArrowDownLeft, Receipt, CheckCircle2 } from 'lucide-react-native';
 import { formatCurrency } from '../utils/format';
-import { Account, useAccounts } from '../hooks/useAccounts';
+import { Account } from '../domain/types';
+import { useFinancialData } from '../context/FinancialDataContext';
 import { useAccountDetails } from '../hooks/useAccountDetails';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -18,7 +19,7 @@ export default function AccountDetailsModal({ account, onClose, onEdit }: Accoun
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['50%', '95%'], []);
   const { transactions, invoices, loading, payInvoice } = useAccountDetails(account?.id || '');
-  const { accounts: allAccounts } = useAccounts();
+  const { accounts: allAccounts, refreshData } = useFinancialData();
   
   const [showPaymentSelector, setShowPaymentSelector] = useState(false);
   const [paymentAccountId, setPaymentAccountId] = useState('');
@@ -129,9 +130,14 @@ export default function AccountDetailsModal({ account, onClose, onEdit }: Accoun
                       <Text className="text-white/40 font-black uppercase text-[10px]">Cancelar</Text>
                     </Pressable>
                     <Pressable 
-                      onPress={() => {
-                        payInvoice(account, paymentAccountId, Math.abs(account.balance_cents));
-                        setShowPaymentSelector(false);
+                      onPress={async () => {
+                        try {
+                          await payInvoice(account, paymentAccountId, Math.abs(account.balance_cents));
+                          await refreshData();
+                          setShowPaymentSelector(false);
+                        } catch (e) {
+                          console.error(e);
+                        }
                       }}
                       className="flex-[2] py-4 bg-emerald-500 rounded-2xl items-center"
                     >
