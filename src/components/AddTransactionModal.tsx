@@ -1,6 +1,11 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import BottomSheet, { 
+  BottomSheetView, 
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetTextInput
+} from '@gorhom/bottom-sheet';
 import { Plus, X, ArrowUpRight, ArrowDownLeft, ArrowRightLeft, Hash, Tag, Calendar, Info } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, startOfMonth, isSameMonth, isBefore } from 'date-fns';
@@ -39,6 +44,14 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
   const [startingInstallment, setStartingInstallment] = useState('1');
   const [accounts, setAccounts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+
+  // Força a subida do bottom sheet após a medição do layout nativo
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      bottomSheetRef.current?.snapToIndex(1);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -124,7 +137,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      index={1}
+      index={-1}
       snapPoints={snapPoints}
       enablePanDownToClose
       onClose={onClose}
@@ -132,7 +145,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
       backgroundStyle={{ backgroundColor: '#0a0a0a' }}
       handleIndicatorStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
     >
-      <ScrollView contentContainerStyle={styles.contentContainer}>
+      <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
         <View className="flex-row justify-between items-center mb-10">
           <View>
             <Text className="text-white text-2xl font-black uppercase tracking-tight">
@@ -186,7 +199,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
         <View className="mb-10 items-center">
           <View className="flex-row items-baseline gap-2">
             <Text className="text-white/10 text-2xl font-bold">R$</Text>
-            <TextInput
+            <BottomSheetTextInput
               className={`text-6xl font-black tracking-tighter tabular-nums ${type === 'INCOME' ? 'text-emerald-400' : 'text-white'}`}
               placeholder="0,00"
               placeholderTextColor="rgba(255,255,255,0.02)"
@@ -201,7 +214,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
         {/* Description Input */}
         <View className="mb-8">
           <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">O que foi isso?</Text>
-          <TextInput
+          <BottomSheetTextInput
             className="bg-white/5 border border-white/10 rounded-[24px] px-5 py-5 text-white text-base font-bold"
             placeholder="Ex: Almoço, Salário, Pix..."
             placeholderTextColor="rgba(255,255,255,0.15)"
@@ -253,7 +266,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
               {type === 'TRANSFER' ? 'De Onde?' : 'Conta'}
             </Text>
             <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <BottomSheetScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {accounts.map((acc) => (
                   <Pressable 
                     key={acc.id}
@@ -268,7 +281,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
                     </Text>
                   </Pressable>
                 ))}
-              </ScrollView>
+              </BottomSheetScrollView>
             </View>
           </View>
 
@@ -276,7 +289,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
             <View className="flex-1">
               <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Para Onde?</Text>
               <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <BottomSheetScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {accounts.filter(a => a.id !== accountId).map((acc) => (
                     <Pressable 
                       key={acc.id}
@@ -291,7 +304,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
                       </Text>
                     </Pressable>
                   ))}
-                </ScrollView>
+                </BottomSheetScrollView>
               </View>
             </View>
           )}
@@ -303,7 +316,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
             <Text className="text-white/20 text-[10px] font-black uppercase tracking-[2px] mb-2 px-1">Categoria</Text>
             <View className="flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 overflow-hidden">
               <Tag size={18} color="rgba(255,255,255,0.2)" className="mr-3" />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <BottomSheetScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {categories.map((cat) => (
                   <Pressable 
                     key={cat.id}
@@ -318,7 +331,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
                     </Text>
                   </Pressable>
                 ))}
-              </ScrollView>
+              </BottomSheetScrollView>
             </View>
           </View>
         )}
@@ -330,7 +343,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
             <View className="flex-row gap-4">
               <View className="flex-[2] flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4">
                 <Hash size={18} color="rgba(255,255,255,0.2)" className="mr-3" />
-                <TextInput
+                <BottomSheetTextInput
                   className="flex-1 text-white text-base font-bold"
                   placeholder="Total"
                   placeholderTextColor="rgba(255,255,255,0.1)"
@@ -343,7 +356,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
 
               {parseInt(installments) > 1 && (
                 <View className="flex-1 flex-row items-center bg-white/5 border border-white/10 rounded-[24px] px-5 py-4">
-                  <TextInput
+                  <BottomSheetTextInput
                     className="flex-1 text-white text-base font-bold text-center"
                     placeholder="1"
                     placeholderTextColor="rgba(255,255,255,0.1)"
@@ -378,7 +391,7 @@ export default function AddTransactionModal({ onClose, onSave, transaction }: Ad
             {saving ? 'Processando...' : (transaction ? 'Atualizar Lançamento' : 'Ativar Registro')}
           </Text>
         </Pressable>
-      </ScrollView>
+      </BottomSheetScrollView>
     </BottomSheet>
   );
 }
